@@ -1,0 +1,17 @@
+services:
+  digital-twin:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+      network: host
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    container_name: rp2040-digital-twin
+    security_opt:
+      - label:disable
+    volumes:
+      - ./firmware:/workspace/firmware:ro,z
+      - ./renode:/workspace/renode:ro,z
+      - ./output:/workspace/output:z
+    entrypoint: ["/bin/bash", "/workspace/scripts/entrypoint.sh"]

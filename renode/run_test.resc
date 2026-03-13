@@ -1,0 +1,23 @@
+# Renode script for RP2040 Digital Twin POC
+# Uses community RP2040 support (matgla/Renode_RP2040)
+
+path add @/opt/renode-rp2040
+
+# Initialize the Raspberry Pi Pico board (loads platform + boot ROM)
+include @boards/initialize_raspberry_pico.resc
+
+# Load the compiled firmware
+sysbus LoadELF @/workspace/build/firmware.elf
+
+# Set vector table offset (boot ROM handles jump to firmware)
+sysbus.cpu0 VectorTableOffset 0x00000000
+sysbus.cpu1 VectorTableOffset 0x00000000
+
+# Capture UART output to file (with immediate flush)
+sysbus.uart0 CreateFileBackend @/workspace/output/uart_output.txt true
+
+# Run for 15 virtual seconds then stop
+emulation RunFor "00:00:15"
+
+echo "Emulation finished"
+quit

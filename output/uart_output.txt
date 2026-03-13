@@ -1,0 +1,13 @@
+BOOT: RP2040 Digital Twin POC
+UART initialized successfully
+LED ON  - cycle 0
+LED OFF - cycle 0
+LED ON  - cycle 1
+LED OFF - cycle 1
+LED ON  - cycle 2
+LED OFF - cycle 2
+LED ON  - cycle 3
+LED OFF - cycle 3
+LED ON  - cycle 4
+LED OFF - cycle 4
+TEST COMPLETE

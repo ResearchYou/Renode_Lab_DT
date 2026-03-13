@@ -1,0 +1,46 @@
+FROM ubuntu:24.04
+
+ARG RENODE_VERSION=1.15.3
+ARG PICO_SDK_VERSION=1.5.1
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PICO_SDK_PATH=/opt/pico-sdk
+ENV PATH="/opt/renode:${PATH}"
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc-arm-none-eabi \
+    libnewlib-arm-none-eabi \
+    libstdc++-arm-none-eabi-newlib \
+    cmake \
+    build-essential \
+    git \
+    python3 \
+    wget \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Renode portable (includes its own Mono runtime)
+RUN wget -q https://github.com/renode/renode/releases/download/v${RENODE_VERSION}/renode-${RENODE_VERSION}.linux-portable.tar.gz \
+    && mkdir -p /opt/renode \
+    && tar xzf renode-${RENODE_VERSION}.linux-portable.tar.gz -C /opt/renode --strip-components=1 \
+    && rm renode-${RENODE_VERSION}.linux-portable.tar.gz
+
+# Clone Pico SDK
+RUN git clone --depth 1 --branch ${PICO_SDK_VERSION} \
+    https://github.com/raspberrypi/pico-sdk.git ${PICO_SDK_PATH} \
+    && cd ${PICO_SDK_PATH} \
+    && git submodule update --init --depth 1
+
+# Clone community RP2040 Renode support
+RUN git clone --depth 1 https://github.com/matgla/Renode_RP2040.git /opt/renode-rp2040
+
+# Create working directories
+RUN mkdir -p /workspace/firmware /workspace/build /workspace/output
+
+WORKDIR /workspace
+
+COPY scripts/ /workspace/scripts/
+RUN chmod +x /workspace/scripts/*.sh
+
+ENTRYPOINT ["/bin/bash"]
