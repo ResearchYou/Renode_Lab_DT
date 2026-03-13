@@ -1,0 +1,917 @@
+13:00:11.3582 [INFO] sysbus: Logging already enabled: False.
+13:00:11.3614 [INFO] sysbus: Logging already enabled: True.
+13:00:11.3615 [INFO] sysbus: Logging already enabled: False.
+13:00:11.3629 [INFO] sysbus: Logging already enabled: True.
+13:00:11.3629 [INFO] sysbus: Logging already enabled: False.
+13:00:11.3644 [INFO] sysbus: Logging already enabled: True.
+13:00:11.3644 [INFO] sysbus: Logging already enabled: False.
+13:00:11.3658 [INFO] sysbus: Logging already enabled: True.
+13:00:11.3789 [INFO] cpu0: Setting initial values: PC = 0xEB, SP = 0x20041F00.
+13:00:11.3793 [INFO] cpu1: Setting initial values: PC = 0xEB, SP = 0x20041F00.
+13:00:11.3795 [INFO] raspberry_pico: Machine started.
+13:00:11.4139 [INFO] sio: [cpu0: 0xEA] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:11.4139 [INFO] sio: [cpu1: 0xEA] ReadUInt32 from 0x0 (CPUID), returned 0x1.
+13:00:11.4177 [INFO] sio: [cpu1: 0x144] ReadUInt32 from 0x58 (FIFO_RD), returned 0x0.
+13:00:11.4177 [INFO] sio: [cpu1: 0x144] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:11.4191 [WARNING] sysbus: Write of value 0x0 to an unimplemented register SYSCFG:PROC0_NMI_MASK (0x40004000) generated from SVD.
+13:00:11.4192 [WARNING] sysbus: Write of value 0x0 to an unimplemented register SYSCFG:PROC1_NMI_MASK (0x40004004) generated from SVD.
+13:00:11.4195 [WARNING] sysbus: Read from an unimplemented register VREG_AND_CHIP_RESET:CHIP_RESET (0x40064008), returning a value from SVD: 0x0.
+13:00:11.4195 [INFO] sio: [cpu1: 0x136] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:11.4199 [WARNING] sysbus: [cpu0: 0x19A] WriteDoubleWord to non existing peripheral at 0x4000F000, value 0x100.
+13:00:11.4203 [WARNING] sysbus: [cpu0: 0x19A] (tag: 'RESET_DONE') ReadDoubleWord from non existing peripheral at 0x4000C008, returning 0xFFFFFFFF.
+13:00:11.4205 [INFO] sio: [cpu1: 0x13C] WriteUInt32 to 0x54 (FIFO_WR), value 0x0.
+13:00:11.4215 [WARNING] pads: Unhandled read from offset 0x6C.
+13:00:11.4216 [WARNING] pads: Unhandled write to offset 0x6C, value 0x0.
+13:00:11.4216 [WARNING] pads: Unhandled read from offset 0x70.
+13:00:11.4216 [WARNING] pads: Unhandled write to offset 0x70, value 0x0.
+13:00:11.4216 [WARNING] pads: Unhandled read from offset 0x74.
+13:00:11.4216 [WARNING] pads: Unhandled write to offset 0x74, value 0x0.
+13:00:11.4216 [WARNING] pads: Unhandled read from offset 0x78.
+13:00:11.4216 [WARNING] pads: Unhandled write to offset 0x78, value 0x0.
+13:00:11.4219 [WARNING] sysbus: [cpu0: 0x196] WriteDoubleWord to non existing peripheral at 0x4000E000, value 0x200240.
+13:00:11.4219 [WARNING] sysbus: [cpu0: 0x196] WriteDoubleWord to non existing peripheral at 0x4000F000, value 0x200240.
+13:00:11.4219 [WARNING] sysbus: [cpu0: 0x196] (tag: 'RESET_DONE') ReadDoubleWord from non existing peripheral at 0x4000C008, returning 0xFFFFFFFF.
+13:00:11.4220 [WARNING] sysbus: Read from an unimplemented register TBMAN:PLATFORM (0x4006C000), returning a value from SVD: 0x5.
+13:00:11.4221 [INFO] sio: [cpu0: 0x250E] ReadUInt32 from 0x8 (GPIO_HI_IN), returned 0x2.
+13:00:11.4221 [INFO] sio: [cpu0: 0x250A] ReadUInt32 from 0x8 (GPIO_HI_IN), returned 0x2.
+13:00:11.4221 [INFO] sio: [cpu0: 0x250A] ReadUInt32 from 0x8 (GPIO_HI_IN), returned 0x2.
+13:00:11.4222 [INFO] sio: [cpu0: 0x250A] ReadUInt32 from 0x8 (GPIO_HI_IN), returned 0x2.
+13:00:11.4222 [INFO] sio: [cpu0: 0x250A] ReadUInt32 from 0x8 (GPIO_HI_IN), returned 0x2.
+13:00:11.4222 [INFO] sio: [cpu0: 0x250A] ReadUInt32 from 0x8 (GPIO_HI_IN), returned 0x2.
+13:00:11.4222 [INFO] sio: [cpu0: 0x250A] ReadUInt32 from 0x8 (GPIO_HI_IN), returned 0x2.
+13:00:11.4222 [INFO] sio: [cpu0: 0x250A] ReadUInt32 from 0x8 (GPIO_HI_IN), returned 0x2.
+13:00:11.4223 [INFO] sio: [cpu0: 0x250A] ReadUInt32 from 0x8 (GPIO_HI_IN), returned 0x2.
+13:00:11.4223 [WARNING] sysbus: [cpu0: 0x196] WriteDoubleWord to non existing peripheral at 0x4000E000, value 0x240.
+13:00:11.4223 [WARNING] sysbus: [cpu0: 0x196] WriteDoubleWord to non existing peripheral at 0x4000F000, value 0x240.
+13:00:11.4223 [WARNING] sysbus: [cpu0: 0x196] (tag: 'RESET_DONE') ReadDoubleWord from non existing peripheral at 0x4000C008, returning 0xFFFFFFFF.
+13:00:11.4232 [WARNING] xip_ssi.xip_flash: Transmission finished in unexpected state: RecognizeOperation
+13:00:11.4232 [WARNING] xip_ssi.xip_flash: Transmission finished in unexpected state: RecognizeOperation
+13:00:11.4263 [WARNING] xip_ssi.xip_flash: Unhandled operation: 0x0
+13:00:11.4265 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x0
+13:00:11.4266 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x0
+13:00:11.4266 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x0
+13:00:11.4270 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:11.4278 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x0
+13:00:11.4283 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x0
+13:00:11.4288 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x0
+13:00:11.4294 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x0
+13:00:11.4301 [WARNING] xip_ssi.xip_flash: Unhandled operation: 0xFF
+13:00:11.4339 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x0
+13:00:11.4340 [WARNING] xip_ssi.xip_flash: Transmission finished in unexpected state: RecognizeOperation
+13:00:11.5481 [WARNING] sysbus: Write of value 0x1 to an unimplemented register XIP_CTRL:FLUSH (0x14000004) generated from SVD.
+13:00:11.5482 [WARNING] sysbus: Read from an unimplemented register XIP_CTRL:FLUSH (0x14000004), returning a value from SVD: 0x0.
+13:00:11.5482 [WARNING] sysbus: [cpu0: 0x2350] WriteDoubleWord to non existing peripheral at 0x14002000, value 0x1.
+13:00:11.5516 [WARNING] qspi_pads: Unhandled write to offset 0x4. Unhandled bits: [0] when writing value 0x21. Tags: SLEWFAST (0x1).
+13:00:11.5516 [WARNING] xip_ssi.xip_flash: Transmission finished in unexpected state: RecognizeOperation
+13:00:11.5525 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x7
+13:00:11.5525 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x7
+13:00:11.5527 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x7
+13:00:11.5529 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x7
+13:00:11.5531 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x7
+13:00:11.5534 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x7
+13:00:11.5561 [WARNING] xip_ssi.xip_flash: Unhandled operation while processing byte: 0x7
+13:00:11.5571 [INFO] sio: [cpu0: 0x100001F6] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:11.5572 [WARNING] sysbus: [cpu0: 0x10001AEC] WriteDoubleWord to non existing peripheral at 0x4000E000, value 0xFEFBCDBF.
+13:00:11.5572 [WARNING] sysbus: [cpu0: 0x10001AEC] WriteDoubleWord to non existing peripheral at 0x4000F000, value 0x3C7FFE.
+13:00:11.5572 [WARNING] sysbus: [cpu0: 0x10001AEC] (tag: 'RESET_DONE') ReadDoubleWord from non existing peripheral at 0x4000C008, returning 0xFFFFFFFF.
+13:00:11.5578 [WARNING] sysbus: Read from an unimplemented register TBMAN:PLATFORM (0x4006C000), returning a value from SVD: 0x5.
+13:00:11.5583 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x0.
+13:00:11.5583 [INFO] sio: [cpu0: 0x1000344C] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xB71B00.
+13:00:11.5584 [INFO] sio: [cpu0: 0x1000344C] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0x1.
+13:00:11.5585 [INFO] sio: [cpu0: 0x1000345A] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:11.5585 [INFO] sio: [cpu0: 0x1000345A] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xB71B00.
+13:00:11.5586 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5586 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x59682F00.
+13:00:11.5586 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xB71B00.
+13:00:11.5586 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:11.5586 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x7D.
+13:00:11.5587 [WARNING] sysbus: [cpu0: 0x10001A36] WriteDoubleWord to non existing peripheral at 0x4000E000, value 0x1000.
+13:00:11.5587 [WARNING] sysbus: [cpu0: 0x10001A36] WriteDoubleWord to non existing peripheral at 0x4000F000, value 0x1000.
+13:00:11.5587 [WARNING] sysbus: [cpu0: 0x10001A36] (tag: 'RESET_DONE') ReadDoubleWord from non existing peripheral at 0x4000C008, returning 0xFFFFFFFF.
+13:00:11.5590 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5590 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xB71B00.
+13:00:11.5590 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0x1.
+13:00:11.5591 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:11.5591 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xB71B00.
+13:00:11.5591 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5591 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x47868C00.
+13:00:11.5591 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xB71B00.
+13:00:11.5591 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:11.5592 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x64.
+13:00:11.5592 [WARNING] sysbus: [cpu0: 0x10001A28] WriteDoubleWord to non existing peripheral at 0x4000E000, value 0x2000.
+13:00:11.5592 [WARNING] sysbus: [cpu0: 0x10001A28] WriteDoubleWord to non existing peripheral at 0x4000F000, value 0x2000.
+13:00:11.5592 [WARNING] sysbus: [cpu0: 0x10001A28] (tag: 'RESET_DONE') ReadDoubleWord from non existing peripheral at 0x4000C008, returning 0xFFFFFFFF.
+13:00:11.5594 [WARNING] clocks: Unhandled write to offset 0x30. Unhandled bits: [11] when writing value 0x802. Tags: RESERVED (0x10).
+13:00:11.5596 [WARNING] clocks: Unhandled write to offset 0x3C. Unhandled bits: [11] when writing value 0x801. Tags: RESERVED (0x8).
+13:00:11.5606 [WARNING] clocks: Unhandled read from offset 0x4C.
+13:00:11.5606 [WARNING] clocks: Unhandled write to offset 0x4C, value 0x100.
+13:00:11.5607 [WARNING] clocks: Unhandled write to offset 0x4C, value 0x100.
+13:00:11.5608 [WARNING] sysbus: [cpu0: 0x10001B22] WriteDoubleWord to non existing peripheral at 0x4000F000, value 0x1FFFFFF.
+13:00:11.5608 [WARNING] sysbus: [cpu0: 0x10001B22] (tag: 'RESET_DONE') ReadDoubleWord from non existing peripheral at 0x4000C008, returning 0xFFFFFFFF.
+13:00:11.5608 [WARNING] pads: Unhandled read from offset 0x78.
+13:00:11.5608 [WARNING] pads: Unhandled write to offset 0x78, value 0x0.
+13:00:11.5608 [WARNING] pads: Unhandled read from offset 0x74.
+13:00:11.5608 [WARNING] pads: Unhandled write to offset 0x74, value 0x0.
+13:00:11.5608 [WARNING] pads: Unhandled read from offset 0x70.
+13:00:11.5609 [WARNING] pads: Unhandled write to offset 0x70, value 0x0.
+13:00:11.5609 [WARNING] pads: Unhandled read from offset 0x6C.
+13:00:11.5609 [WARNING] pads: Unhandled write to offset 0x6C, value 0x0.
+13:00:11.5614 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x100 (SPINLOCK_0), value 0x0.
+13:00:11.5615 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x104 (SPINLOCK_1), value 0x0.
+13:00:11.5615 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x108 (SPINLOCK_2), value 0x0.
+13:00:11.5615 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x10C (SPINLOCK_3), value 0x0.
+13:00:11.5616 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x110 (SPINLOCK_4), value 0x0.
+13:00:11.5616 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x114 (SPINLOCK_5), value 0x0.
+13:00:11.5616 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x118 (SPINLOCK_6), value 0x0.
+13:00:11.5616 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x11C (SPINLOCK_7), value 0x0.
+13:00:11.5616 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x120 (SPINLOCK_8), value 0x0.
+13:00:11.5616 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x124 (SPINLOCK_9), value 0x0.
+13:00:11.5617 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:11.5617 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x12C (SPINLOCK_11), value 0x0.
+13:00:11.5617 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x130 (SPINLOCK_12), value 0x0.
+13:00:11.5617 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x134 (SPINLOCK_13), value 0x0.
+13:00:11.5617 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x138 (SPINLOCK_14), value 0x0.
+13:00:11.5617 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x13C (SPINLOCK_15), value 0x0.
+13:00:11.5618 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:11.5618 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:11.5618 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x148 (SPINLOCK_18), value 0x0.
+13:00:11.5618 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x14C (SPINLOCK_19), value 0x0.
+13:00:11.5618 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x150 (SPINLOCK_20), value 0x0.
+13:00:11.5618 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x154 (SPINLOCK_21), value 0x0.
+13:00:11.5619 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x158 (SPINLOCK_22), value 0x0.
+13:00:11.5619 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x15C (SPINLOCK_23), value 0x0.
+13:00:11.5619 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x160 (SPINLOCK_24), value 0x0.
+13:00:11.5619 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x164 (SPINLOCK_25), value 0x0.
+13:00:11.5619 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x168 (SPINLOCK_26), value 0x0.
+13:00:11.5619 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x16C (SPINLOCK_27), value 0x0.
+13:00:11.5620 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x170 (SPINLOCK_28), value 0x0.
+13:00:11.5620 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x174 (SPINLOCK_29), value 0x0.
+13:00:11.5620 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x178 (SPINLOCK_30), value 0x0.
+13:00:11.5620 [INFO] sio: [cpu0: 0x100004A2] WriteUInt32 to 0x17C (SPINLOCK_31), value 0x0.
+13:00:11.5621 [INFO] sio: [cpu0: 0x1000045C] ReadUInt32 from 0x12C (SPINLOCK_11), returned 0x800.
+13:00:11.5621 [INFO] sio: [cpu0: 0x10000486] WriteUInt32 to 0x12C (SPINLOCK_11), value 0x0.
+13:00:11.5622 [INFO] sio: [cpu0: 0x100011DE] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:11.5625 [INFO] sio: [cpu0: 0x100011FE] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:11.5626 [INFO] sio: [cpu0: 0x10001088] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:11.5627 [INFO] sio: [cpu0: 0x1000050A] ReadUInt32 from 0x124 (SPINLOCK_9), returned 0x200.
+13:00:11.5627 [INFO] sio: [cpu0: 0x1000053C] WriteUInt32 to 0x124 (SPINLOCK_9), value 0x0.
+13:00:11.5634 [INFO] sio: [cpu0: 0x100010C4] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:11.5635 [INFO] sio: [cpu0: 0x10000B94] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:11.5637 [WARNING] pads: Unhandled read from offset 0x4.
+13:00:11.5637 [WARNING] pads: Unhandled write to offset 0x4, value 0x40.
+13:00:11.5638 [INFO] clocks: Update of GPIO mapping for pin: 0 function: UART0_TX
+13:00:11.5641 [WARNING] pads: Unhandled read from offset 0x8.
+13:00:11.5641 [WARNING] pads: Unhandled write to offset 0x8, value 0x40.
+13:00:11.5641 [INFO] clocks: Update of GPIO mapping for pin: 1 function: UART0_RX
+13:00:11.5642 [WARNING] sysbus: [cpu0: 0x100015C6] WriteDoubleWord to non existing peripheral at 0x4000E000, value 0x400000.
+13:00:11.5642 [WARNING] sysbus: [cpu0: 0x100015C6] WriteDoubleWord to non existing peripheral at 0x4000F000, value 0x400000.
+13:00:11.5643 [WARNING] sysbus: [cpu0: 0x100015C6] (tag: 'RESET_DONE') ReadDoubleWord from non existing peripheral at 0x4000C008, returning 0xFFFFFFFF.
+13:00:11.5643 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5643 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3B9ACA00.
+13:00:11.5643 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0x1C200.
+13:00:11.5644 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0xFA00.
+13:00:11.5644 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x21E8.
+13:00:11.5651 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5651 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1DCD6500.
+13:00:11.5651 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0x10F4.
+13:00:11.5652 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x654.
+13:00:11.5652 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x1C207.
+13:00:11.5655 [INFO] sio: [cpu0: 0x10000408] WriteUInt32 to 0x28 (GPIO_OE_CLR), value 0x2000000.
+13:00:11.5656 [INFO] sio: [cpu0: 0x10000408] WriteUInt32 to 0x18 (GPIO_OUT_CLR), value 0x2000000.
+13:00:11.5657 [WARNING] pads: Unhandled read from offset 0x68.
+13:00:11.5658 [WARNING] pads: Unhandled write to offset 0x68, value 0x40.
+13:00:11.5658 [INFO] clocks: Update of GPIO mapping for pin: 25 function: SIO
+13:00:11.5658 [INFO] sio: [cpu0: 0x1000036E] WriteUInt32 to 0x24 (GPIO_OE_SET), value 0x2000000.
+13:00:11.5661 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:11.5661 [INFO] sio: [cpu0: 0x20000142] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:11.5661 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:11.5674 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:11.5674 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:11.5675 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:11.5675 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:11.5675 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:11.5679 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:11.5679 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:11.5679 [INFO] sio: [cpu0: 0x1000037C] WriteUInt32 to 0x14 (GPIO_OUT_SET), value 0x2000000.
+13:00:11.5682 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:11.5682 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:11.5682 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:11.5684 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5684 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1130.
+13:00:11.5684 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:11.5685 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:11.5685 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x1B8.
+13:00:11.5685 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5685 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1B8.
+13:00:11.5685 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:11.5686 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:11.5686 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x2C.
+13:00:11.5686 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5686 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2C.
+13:00:11.5686 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:11.5687 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:11.5687 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x4.
+13:00:11.5687 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5687 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x4.
+13:00:11.5687 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:11.5688 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:11.5688 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:11.5688 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5688 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x0.
+13:00:11.5689 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:11.5689 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:11.5689 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:11.5689 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:11.5690 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x0.
+13:00:11.5690 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:11.5690 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:11.5690 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:11.5690 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:11.5691 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:11.5691 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:11.5692 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:11.5694 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:11.5694 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:11.5695 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:11.5695 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:11.5696 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:11.5696 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:11.5697 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.1953 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.1955 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.1957 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:12.1959 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:12.1960 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.1960 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.1960 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:12.1962 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:12.1962 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:12.1963 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:12.1971 [INFO] sio: [cpu0: 0x1000039C] WriteUInt32 to 0x18 (GPIO_OUT_CLR), value 0x2000000.
+13:00:12.1972 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:12.1973 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:12.2005 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:12.2005 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.2005 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x7B251.
+13:00:12.2006 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.2006 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x1.
+13:00:12.2006 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xC508.
+13:00:12.2006 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.2006 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xC508.
+13:00:12.2007 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.2007 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:12.2007 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x13B4.
+13:00:12.2007 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.2007 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x13B4.
+13:00:12.2007 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.2008 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:12.2008 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x1F8.
+13:00:12.2008 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.2008 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1F8.
+13:00:12.2008 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.2009 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:12.2009 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x32.
+13:00:12.2009 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.2009 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x32.
+13:00:12.2010 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.2010 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:12.2010 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x5.
+13:00:12.2010 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.2010 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x5.
+13:00:12.2011 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.2011 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x5.
+13:00:12.2011 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:12.2011 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.2011 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x0.
+13:00:12.2012 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.2012 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:12.2012 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:12.2012 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.2012 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x0.
+13:00:12.2013 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.2013 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:12.2013 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:12.2013 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:12.2014 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:12.2014 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:12.2014 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.2014 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.2014 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:12.2015 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.2015 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.2015 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.2016 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.2016 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:12.8290 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.8293 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.8293 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:12.8293 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:12.8294 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.8294 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.8294 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:12.8295 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:12.8295 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:12.8295 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:12.8296 [INFO] sio: [cpu0: 0x10000386] WriteUInt32 to 0x14 (GPIO_OUT_SET), value 0x2000000.
+13:00:12.8296 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:12.8297 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:12.8297 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:12.8300 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.8300 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xF5372.
+13:00:12.8301 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.8301 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x2.
+13:00:12.8301 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x18858.
+13:00:12.8302 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.8302 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x18858.
+13:00:12.8302 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.8303 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:12.8303 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x273C.
+13:00:12.8303 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.8304 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x273C.
+13:00:12.8304 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.8304 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:12.8305 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x3EC.
+13:00:12.8305 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.8305 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3EC.
+13:00:12.8306 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.8306 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:12.8306 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x64.
+13:00:12.8306 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.8307 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x64.
+13:00:12.8307 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.8307 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:12.8308 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xA.
+13:00:12.8308 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.8308 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xA.
+13:00:12.8308 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.8309 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:12.8309 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x1.
+13:00:12.8309 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.8310 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1.
+13:00:12.8310 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.8310 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x1.
+13:00:12.8310 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:12.8311 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.8311 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1.
+13:00:12.8311 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.8311 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x1.
+13:00:12.8312 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:12.8312 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:12.8312 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1.
+13:00:12.8312 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:12.8313 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x1.
+13:00:12.8313 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:12.8314 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:12.8314 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:12.8315 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:12.8315 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.8315 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.8315 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:12.8316 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.8316 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.8316 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:12.8316 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:12.8317 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:13.4458 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:13.4459 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:13.4459 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:13.4459 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:13.4459 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:13.4459 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:13.4460 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:13.4460 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:13.4460 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:13.4460 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:13.4460 [INFO] sio: [cpu0: 0x1000039C] WriteUInt32 to 0x18 (GPIO_OUT_CLR), value 0x2000000.
+13:00:13.4461 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:13.4461 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:13.4461 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:13.4461 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:13.4461 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x16F493.
+13:00:13.4462 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:13.4462 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x3.
+13:00:13.4462 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x24BA8.
+13:00:13.4462 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:13.4462 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x24BA8.
+13:00:13.4462 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:13.4463 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:13.4463 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x3AC4.
+13:00:13.4463 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:13.4463 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3AC4.
+13:00:13.4463 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:13.4464 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:13.4464 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x5E0.
+13:00:13.4464 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:13.4464 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x5E0.
+13:00:13.4464 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:13.4464 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:13.4465 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x96.
+13:00:13.4465 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:13.4465 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x96.
+13:00:13.4465 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:13.4465 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:13.4465 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xF.
+13:00:13.4466 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:13.4466 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xF.
+13:00:13.4466 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:13.4466 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x5.
+13:00:13.4466 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x1.
+13:00:13.4466 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:13.4467 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1.
+13:00:13.4467 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:13.4467 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x1.
+13:00:13.4467 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:13.4467 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:13.4467 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1.
+13:00:13.4468 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:13.4468 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x1.
+13:00:13.4468 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:13.4468 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:13.4468 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1.
+13:00:13.4468 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:13.4469 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x1.
+13:00:13.4469 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:13.4469 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:13.4469 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:13.4469 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:13.4469 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:13.4470 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:13.4470 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:13.4470 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:13.4470 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:13.4471 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:13.4471 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:13.4471 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:14.0665 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.0665 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.0666 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:14.0666 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:14.0666 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.0667 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.0667 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:14.0667 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:14.0668 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:14.0668 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:14.0668 [INFO] sio: [cpu0: 0x100003B2] WriteUInt32 to 0x14 (GPIO_OUT_SET), value 0x2000000.
+13:00:14.0669 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:14.0669 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:14.0669 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:14.0670 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.0670 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1E95B4.
+13:00:14.0744 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.0745 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:14.0745 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x30EF8.
+13:00:14.0746 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.0746 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x30EF8.
+13:00:14.0746 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.0747 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:14.0747 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x4E4C.
+13:00:14.0747 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.0747 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x4E4C.
+13:00:14.0748 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.0748 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:14.0748 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x7D4.
+13:00:14.0749 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.0749 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x7D4.
+13:00:14.0749 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.0750 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:14.0750 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xC8.
+13:00:14.0750 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.0751 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xC8.
+13:00:14.0751 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.0751 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:14.0752 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x14.
+13:00:14.0752 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.0752 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x14.
+13:00:14.0753 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.0753 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:14.0753 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x2.
+13:00:14.0754 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.0754 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2.
+13:00:14.0754 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.0755 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x2.
+13:00:14.0755 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:14.0755 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.0756 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2.
+13:00:14.0756 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.0756 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x2.
+13:00:14.0756 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:14.0757 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.0757 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2.
+13:00:14.0757 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.0758 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x2.
+13:00:14.0758 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:14.0758 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:14.0759 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:14.0759 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:14.0759 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.0760 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.0760 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:14.0760 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.0761 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.0761 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.0761 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.0761 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:14.6980 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.6980 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.6981 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:14.6981 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:14.6982 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.6982 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.6982 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:14.6983 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:14.6983 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:14.6983 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:14.6984 [INFO] sio: [cpu0: 0x1000039C] WriteUInt32 to 0x18 (GPIO_OUT_CLR), value 0x2000000.
+13:00:14.6984 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:14.6985 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:14.6985 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:14.6985 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.6985 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2636D6.
+13:00:14.6985 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.6986 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x6.
+13:00:14.6986 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x3D248.
+13:00:14.6986 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.6986 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3D248.
+13:00:14.6987 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.6987 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:14.6987 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x61D4.
+13:00:14.6987 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.6988 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x61D4.
+13:00:14.6988 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.6988 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:14.6988 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x9C8.
+13:00:14.6988 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.6989 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x9C8.
+13:00:14.6989 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.6989 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:14.6989 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xFA.
+13:00:14.6990 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.6990 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xFA.
+13:00:14.6990 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.6990 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:14.6991 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x19.
+13:00:14.6991 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.6991 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x19.
+13:00:14.6991 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.6992 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x5.
+13:00:14.6992 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x2.
+13:00:14.6992 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.6992 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2.
+13:00:14.6992 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.6993 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x2.
+13:00:14.6993 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:14.6993 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.6993 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2.
+13:00:14.6994 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.6994 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x2.
+13:00:14.6994 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:14.6994 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:14.6995 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2.
+13:00:14.6995 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:14.6995 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x2.
+13:00:14.6995 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:14.6995 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:14.6996 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:14.6996 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:14.6996 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.6996 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.6997 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:14.6997 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.6997 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.6997 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:14.6998 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:14.6998 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:15.3344 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.3345 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.3345 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:15.3345 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:15.3345 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.3346 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.3346 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:15.3346 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:15.3346 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:15.3347 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:15.3350 [INFO] sio: [cpu0: 0x100003B2] WriteUInt32 to 0x14 (GPIO_OUT_SET), value 0x2000000.
+13:00:15.3351 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:15.3351 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:15.3351 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:15.3351 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.3352 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2DD7F7.
+13:00:15.3352 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.3352 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x7.
+13:00:15.3352 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x49598.
+13:00:15.3352 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.3352 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x49598.
+13:00:15.3353 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.3353 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:15.3353 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x755C.
+13:00:15.3354 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.3354 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x755C.
+13:00:15.3354 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.3354 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:15.3354 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xBBC.
+13:00:15.3354 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.3355 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xBBC.
+13:00:15.3355 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.3355 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:15.3355 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x12C.
+13:00:15.3355 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.3355 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x12C.
+13:00:15.3356 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.3356 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:15.3356 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x1E.
+13:00:15.3356 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.3356 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1E.
+13:00:15.3356 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.3357 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:15.3357 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x3.
+13:00:15.3357 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.3357 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3.
+13:00:15.3357 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.3357 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x3.
+13:00:15.3358 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:15.3358 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.3358 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3.
+13:00:15.3358 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.3358 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x3.
+13:00:15.3358 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:15.3359 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.3359 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3.
+13:00:15.3359 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.3359 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x3.
+13:00:15.3359 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:15.3360 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:15.3360 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:15.3360 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:15.3360 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.3360 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.3360 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:15.3361 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.3361 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.3361 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.3361 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.3361 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:15.9698 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.9698 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.9698 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:15.9699 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:15.9699 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.9699 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.9699 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:15.9699 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:15.9699 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:15.9700 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:15.9701 [INFO] sio: [cpu0: 0x1000039C] WriteUInt32 to 0x18 (GPIO_OUT_CLR), value 0x2000000.
+13:00:15.9701 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:15.9701 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:15.9701 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:15.9702 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.9702 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x357918.
+13:00:15.9702 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.9702 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x8.
+13:00:15.9702 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x558E8.
+13:00:15.9702 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.9703 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x558E8.
+13:00:15.9703 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.9703 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:15.9703 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x88E4.
+13:00:15.9703 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.9703 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x88E4.
+13:00:15.9704 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.9704 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:15.9705 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xDB0.
+13:00:15.9705 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.9705 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xDB0.
+13:00:15.9705 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.9705 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:15.9706 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x15E.
+13:00:15.9706 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.9706 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x15E.
+13:00:15.9706 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.9707 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:15.9707 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x23.
+13:00:15.9707 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.9708 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x23.
+13:00:15.9708 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.9708 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x5.
+13:00:15.9708 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x3.
+13:00:15.9709 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.9709 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3.
+13:00:15.9709 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.9710 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x3.
+13:00:15.9710 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:15.9710 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.9710 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3.
+13:00:15.9710 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.9711 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x3.
+13:00:15.9711 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:15.9711 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:15.9711 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3.
+13:00:15.9711 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:15.9712 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x3.
+13:00:15.9712 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:15.9712 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:15.9712 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:15.9712 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:15.9713 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.9713 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.9713 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:15.9713 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.9713 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.9714 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:15.9714 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:15.9714 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:16.5887 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:16.5888 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:16.5888 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:16.5889 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:16.5889 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:16.5889 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:16.5889 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:16.5889 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:16.5890 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:16.5890 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:16.5890 [INFO] sio: [cpu0: 0x100003B2] WriteUInt32 to 0x14 (GPIO_OUT_SET), value 0x2000000.
+13:00:16.5890 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:16.5891 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:16.5891 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:16.5891 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:16.5892 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x3D1A40.
+13:00:16.5892 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:16.5892 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x6.
+13:00:16.5893 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x61C39.
+13:00:16.5893 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:16.5893 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x61C39.
+13:00:16.5894 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:16.5894 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x1.
+13:00:16.5894 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x9C6C.
+13:00:16.5895 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:16.5895 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x9C6C.
+13:00:16.5895 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:16.5896 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:16.5896 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xFA4.
+13:00:16.5896 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:16.5896 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xFA4.
+13:00:16.5897 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:16.5897 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:16.5897 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x190.
+13:00:16.5898 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:16.5898 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x190.
+13:00:16.5898 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:16.5899 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:16.5899 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x28.
+13:00:16.5899 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:16.5900 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x28.
+13:00:16.5900 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:16.5900 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:16.5900 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x4.
+13:00:16.5901 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:16.5901 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x4.
+13:00:16.5901 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:16.5902 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:16.5902 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:16.5902 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:16.5902 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x4.
+13:00:16.5903 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:16.5903 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:16.5903 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:16.5903 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:16.5903 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x4.
+13:00:16.5904 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:16.5905 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:16.5905 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:16.5905 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:16.5905 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:16.5905 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:16.5906 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:16.5906 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:16.5906 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:16.5907 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:16.5907 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:16.5907 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:16.5907 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:16.5907 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:17.2177 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:17.2178 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:17.2178 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:17.2178 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:17.2178 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:17.2179 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:17.2179 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:17.2179 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:17.2179 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:17.2179 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:17.2180 [INFO] sio: [cpu0: 0x1000039C] WriteUInt32 to 0x18 (GPIO_OUT_CLR), value 0x2000000.
+13:00:17.2180 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:17.2180 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:17.2180 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:17.2181 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.2181 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x44BBB4.
+13:00:17.2181 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.2181 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:17.2181 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x6DF92.
+13:00:17.2182 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.2182 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x6DF92.
+13:00:17.2182 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.2182 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:17.2182 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xAFF5.
+13:00:17.2183 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.2183 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xAFF5.
+13:00:17.2183 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.2183 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x5.
+13:00:17.2184 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x1198.
+13:00:17.2184 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.2184 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1198.
+13:00:17.2184 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.2185 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:17.2185 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x1C2.
+13:00:17.2185 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.2185 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1C2.
+13:00:17.2186 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.2186 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:17.2186 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x2D.
+13:00:17.2186 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.2186 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x2D.
+13:00:17.2187 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.2187 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x5.
+13:00:17.2187 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x4.
+13:00:17.2187 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.2187 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x4.
+13:00:17.2188 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.2188 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:17.2188 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:17.2188 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.2188 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x4.
+13:00:17.2189 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.2189 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:17.2189 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:17.2189 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.2189 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x4.
+13:00:17.2190 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.2190 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:17.2190 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:17.2190 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:17.2190 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:17.2191 [INFO] sio: [cpu0: 0x10000BF0] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:17.2191 [INFO] sio: [cpu0: 0x1000113E] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:17.2191 [INFO] sio: [cpu0: 0x100011B2] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:17.2191 [INFO] sio: [cpu0: 0x10000C84] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:17.2191 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:17.2192 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:17.2192 [INFO] sio: [cpu0: 0x10000DD6] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:17.2192 [INFO] sio: [cpu0: 0x10000DE6] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:17.2193 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:17.8419 [INFO] sio: [cpu0: 0x10000F24] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:17.8420 [INFO] sio: [cpu0: 0x10000F6E] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:17.8421 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:17.8421 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:17.8422 [INFO] sio: [cpu0: 0x10000876] ReadUInt32 from 0x128 (SPINLOCK_10), returned 0x400.
+13:00:17.8497 [INFO] sio: [cpu0: 0x10000886] WriteUInt32 to 0x128 (SPINLOCK_10), value 0x0.
+13:00:17.8497 [INFO] sio: [cpu0: 0x10000A6A] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:17.8497 [INFO] sio: [cpu0: 0x10000AB6] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:17.8498 [INFO] sio: [cpu0: 0x100009CA] ReadUInt32 from 0x144 (SPINLOCK_17), returned 0x20000.
+13:00:17.8498 [INFO] sio: [cpu0: 0x10000A20] WriteUInt32 to 0x144 (SPINLOCK_17), value 0x0.
+13:00:17.8498 [INFO] sio: [cpu0: 0x200000D4] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:17.8498 [INFO] sio: [cpu0: 0x200000E0] ReadUInt32 from 0x0 (CPUID), returned 0x0.
+13:00:17.8498 [INFO] sio: [cpu0: 0x20000150] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:17.8498 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.8499 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x4C5CD4.
+13:00:17.8499 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.8499 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:17.8499 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x7A2E2.
+13:00:17.8499 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.8499 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x7A2E2.
+13:00:17.8499 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.8500 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:17.8500 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0xC37D.
+13:00:17.8500 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.8500 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0xC37D.
+13:00:17.8500 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.8500 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x5.
+13:00:17.8501 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x138C.
+13:00:17.8501 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.8501 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x138C.
+13:00:17.8501 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.8501 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x4.
+13:00:17.8501 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x1F4.
+13:00:17.8502 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.8502 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x1F4.
+13:00:17.8502 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.8502 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:17.8502 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x32.
+13:00:17.8502 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.8503 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x32.
+13:00:17.8503 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.8503 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x0.
+13:00:17.8503 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x5.
+13:00:17.8503 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x78 (DIV_CSR), returned 0x1.
+13:00:17.8503 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x60 (DIV_UDIVIDEND), value 0x5.
+13:00:17.8503 [INFO] sio: [cpu0: 0x10003444] WriteUInt32 to 0x64 (DIV_UDIVISOR), value 0xA.
+13:00:17.8504 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x74 (DIV_REMAINDER), returned 0x5.
+13:00:17.8504 [INFO] sio: [cpu0: 0x10003444] ReadUInt32 from 0x70 (DIV_QUOTIENT), returned 0x0.
+13:00:17.8504 [INFO] sio: [cpu0: 0x20000164] ReadUInt32 from 0x140 (SPINLOCK_16), returned 0x10000.
+13:00:17.8504 [INFO] sio: [cpu0: 0x20000178] WriteUInt32 to 0x140 (SPINLOCK_16), value 0x0.
+13:00:17.8507 [INFO] sio: [cpu1: 0x182] ReadUInt32 from 0x50 (FIFO_ST), returned 0xA.
+13:00:30.1186 [INFO] raspberry_pico: Machine paused.
+13:00:30.1434 [INFO] raspberry_pico: Disposed.

@@ -16,6 +16,12 @@ sysbus.cpu1 VectorTableOffset 0x00000000
 # Capture UART output to file (with immediate flush)
 sysbus.uart0 CreateFileBackend @/workspace/output/uart_output.txt true
 
+# Enable Renode log file — captures peripheral access traces
+logFile @/workspace/output/renode.log true
+
+# Log all register-level reads/writes to the SIO peripheral (GPIO control)
+sysbus LogPeripheralAccess sysbus.sio
+
 # Run for 15 virtual seconds then stop
 emulation RunFor "00:00:15"
 
