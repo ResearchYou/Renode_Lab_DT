@@ -1,5 +1,7 @@
+output/
+firmware/
+renode/
+.git/
 .claude/
-output/*
 report-app/node_modules/
 report-app/dist/
-

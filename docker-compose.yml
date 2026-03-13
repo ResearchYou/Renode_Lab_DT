@@ -1,8 +1,8 @@
 services:
   digital-twin:
     build:
-      context: ./docker
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/Dockerfile
       network: host
     dns:
       - 8.8.8.8
@@ -18,8 +18,8 @@ services:
 
   digital-twin-metrics:
     build:
-      context: ./docker
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/Dockerfile
       network: host
     dns:
       - 8.8.8.8

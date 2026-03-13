@@ -1,3 +1,12 @@
+# ── Stage 1: Build Vue report template ──
+FROM node:20-alpine AS report-build
+WORKDIR /app
+COPY report-app/package.json report-app/package-lock.json ./
+RUN npm ci
+COPY report-app/ .
+RUN npm run build
+
+# ── Stage 2: Digital twin runtime ──
 FROM ubuntu:24.04
 
 ARG RENODE_VERSION=1.15.3
@@ -41,7 +50,8 @@ RUN mkdir -p /workspace/firmware /workspace/build /workspace/output
 
 WORKDIR /workspace
 
-COPY scripts/ /workspace/scripts/
+COPY docker/scripts/ /workspace/scripts/
+COPY --from=report-build /app/dist/index.html /workspace/scripts/report_template.html
 RUN chmod +x /workspace/scripts/*.sh
 
 ENTRYPOINT ["/bin/bash"]

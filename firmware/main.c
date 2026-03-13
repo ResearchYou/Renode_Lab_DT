@@ -14,7 +14,7 @@ int main() {
     printf("UART initialized successfully\n");
 
     for (int i = 0; i < 5; i++) {
-        // gpio_put(LED_PIN, 1);
+        gpio_put(LED_PIN, 1);
         printf("[%u] LED ON  - cycle %d\n", (unsigned int)time_us_32(), i);
         sleep_ms(300);
 
