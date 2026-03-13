@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh auth status)"
+      "Bash(gh auth status)",
+      "Bash(gpg --version)",
+      "Bash(gpg --batch:*)",
+      "Read(//home/cez/.gnupg/**)"
     ]
   }
 }
