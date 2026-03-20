@@ -16,38 +16,62 @@ jobs:
   compose-build:
     runs-on: debian-latest
     steps:
-      - name: Locate repository workspace (Node-free)
+      - name: Prepare workspace without JS actions
         run: |
           set -eu
 
+          if command -v sudo >/dev/null 2>&1; then
+            SUDO=sudo
+          elif [ "$(id -u)" -eq 0 ]; then
+            SUDO=""
+          else
+            SUDO=""
+          fi
+
+          if ! command -v git >/dev/null 2>&1; then
+            if [ -n "$SUDO" ] || [ "$(id -u)" -eq 0 ]; then
+              if command -v apt-get >/dev/null 2>&1; then
+                $SUDO apt-get update
+                $SUDO apt-get install -y --no-install-recommends git ca-certificates
+              elif command -v dnf >/dev/null 2>&1; then
+                $SUDO dnf -y install git ca-certificates
+              elif command -v apk >/dev/null 2>&1; then
+                $SUDO apk add --no-cache git ca-certificates
+              else
+                echo "Unsupported package manager; install git on runner image."
+                exit 1
+              fi
+            else
+              echo "git is missing and no root/sudo is available to install it."
+              exit 1
+            fi
+          fi
+
           REPO_FULL="${GITHUB_REPOSITORY:-${GITEA_REPOSITORY:-}}"
-          REPO_NAME="${REPO_FULL##*/}"
-          if [ -z "$REPO_NAME" ] || [ "$REPO_NAME" = "$REPO_FULL" ]; then
-            REPO_NAME="Renode_DT"
-          fi
-
-          WORKSPACE=""
-          for CANDIDATE in "${GITHUB_WORKSPACE:-}" "${GITEA_WORKSPACE:-}" "$PWD" "$PWD/$REPO_NAME" "/workspace/$REPO_NAME" "/__w/$REPO_NAME/$REPO_NAME"; do
-            if [ -n "$CANDIDATE" ] && [ -f "$CANDIDATE/docker-compose.yml" ]; then
-              WORKSPACE="$CANDIDATE"
-              break
-            fi
-          done
-
-          if [ -z "$WORKSPACE" ]; then
-            FOUND_COMPOSE="$(find . -maxdepth 5 -type f -name docker-compose.yml | head -n1 || true)"
-            if [ -n "$FOUND_COMPOSE" ]; then
-              WORKSPACE="$(dirname "$FOUND_COMPOSE")"
-            fi
-          fi
-
-          if [ -z "$WORKSPACE" ]; then
-            echo "Could not locate docker-compose.yml in runner workspace."
+          SHA="${GITHUB_SHA:-${GITEA_SHA:-}}"
+          SERVER_URL="${GITHUB_SERVER_URL:-${GITEA_SERVER_URL:-}}"
+          if [ -z "$REPO_FULL" ] || [ -z "$SHA" ] || [ -z "$SERVER_URL" ]; then
+            echo "Missing repository context (REPO/SHA/SERVER_URL)."
             exit 1
           fi
 
+          WORKSPACE="$PWD/workspace"
+          rm -rf "$WORKSPACE"
+          mkdir -p "$WORKSPACE"
+
+          CLONE_URL="$SERVER_URL/$REPO_FULL.git"
+          if [ -n "${GITEA_TOKEN:-}" ]; then
+            CLONE_URL="$(printf '%s' "$SERVER_URL" | sed 's#://#://x-access-token:'"$GITEA_TOKEN"'@#')/$REPO_FULL.git"
+          fi
+
+          git init "$WORKSPACE"
+          git -C "$WORKSPACE" remote add origin "$CLONE_URL"
+          git -C "$WORKSPACE" fetch --depth 1 origin "$SHA"
+          git -C "$WORKSPACE" checkout --detach FETCH_HEAD
+
           echo "Using workspace: $WORKSPACE"
           ls -la "$WORKSPACE"
+          test -f "$WORKSPACE/docker-compose.yml"
 
       - name: Ensure Docker + Compose availability
         run: |
@@ -87,31 +111,7 @@ jobs:
       - name: Build all compose services
         run: |
           set -eu
-          REPO_FULL="${GITHUB_REPOSITORY:-${GITEA_REPOSITORY:-}}"
-          REPO_NAME="${REPO_FULL##*/}"
-          if [ -z "$REPO_NAME" ] || [ "$REPO_NAME" = "$REPO_FULL" ]; then
-            REPO_NAME="Renode_DT"
-          fi
-
-          WORKSPACE=""
-          for CANDIDATE in "${GITHUB_WORKSPACE:-}" "${GITEA_WORKSPACE:-}" "$PWD" "$PWD/$REPO_NAME" "/workspace/$REPO_NAME" "/__w/$REPO_NAME/$REPO_NAME"; do
-            if [ -n "$CANDIDATE" ] && [ -f "$CANDIDATE/docker-compose.yml" ]; then
-              WORKSPACE="$CANDIDATE"
-              break
-            fi
-          done
-
-          if [ -z "$WORKSPACE" ]; then
-            FOUND_COMPOSE="$(find . -maxdepth 5 -type f -name docker-compose.yml | head -n1 || true)"
-            if [ -n "$FOUND_COMPOSE" ]; then
-              WORKSPACE="$(dirname "$FOUND_COMPOSE")"
-            fi
-          fi
-
-          if [ -z "$WORKSPACE" ]; then
-            echo "Could not locate docker-compose.yml for build step."
-            exit 1
-          fi
-
+          WORKSPACE="$PWD/workspace"
+          test -f "$WORKSPACE/docker-compose.yml"
           cd "$WORKSPACE"
           docker compose build
