@@ -17,6 +17,8 @@ jobs:
     runs-on: debian-latest
     steps:
       - name: Fetch source archive (Node-free)
+        env:
+          REPO_READ_TOKEN: ${{ secrets.REPO_READ_TOKEN }}
         run: |
           set -eu
 
@@ -34,12 +36,12 @@ jobs:
           rm -rf "$WORKSPACE"
           mkdir -p "$WORKSPACE"
 
-          if [ -z "${{ secrets.REPO_READ_TOKEN }}" ]; then
+          if [ -z "${REPO_READ_TOKEN:-}" ]; then
             echo "Missing REPO_READ_TOKEN secret."
             exit 1
           fi
 
-          curl -fsSL -H "Authorization: token ${{ secrets.REPO_READ_TOKEN }}" "$ARCHIVE_URL" -o "$ARCHIVE_TAR"
+          curl -fsSL -H "Authorization: token $REPO_READ_TOKEN" "$ARCHIVE_URL" -o "$ARCHIVE_TAR"
           tar -xzf "$ARCHIVE_TAR" -C "$WORKSPACE" --strip-components=1
           test -f "$WORKSPACE/docker-compose.yml"
           echo "Workspace prepared at $WORKSPACE"
