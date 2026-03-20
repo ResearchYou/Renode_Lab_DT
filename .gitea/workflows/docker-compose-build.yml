@@ -28,21 +28,21 @@ jobs:
             SUDO=""
           fi
 
-          if ! command -v git >/dev/null 2>&1; then
+          if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1; then
             if [ -n "$SUDO" ] || [ "$(id -u)" -eq 0 ]; then
               if command -v apt-get >/dev/null 2>&1; then
                 $SUDO apt-get update
-                $SUDO apt-get install -y --no-install-recommends git ca-certificates
+                $SUDO apt-get install -y --no-install-recommends curl tar ca-certificates
               elif command -v dnf >/dev/null 2>&1; then
-                $SUDO dnf -y install git ca-certificates
+                $SUDO dnf -y install curl tar ca-certificates
               elif command -v apk >/dev/null 2>&1; then
-                $SUDO apk add --no-cache git ca-certificates
+                $SUDO apk add --no-cache curl tar ca-certificates
               else
-                echo "Unsupported package manager; install git on runner image."
+                echo "Unsupported package manager; install curl+tar on runner image."
                 exit 1
               fi
             else
-              echo "git is missing and no root/sudo is available to install it."
+              echo "curl/tar missing and no root/sudo is available to install them."
               exit 1
             fi
           fi
@@ -58,16 +58,21 @@ jobs:
           WORKSPACE="$PWD/workspace"
           rm -rf "$WORKSPACE"
           mkdir -p "$WORKSPACE"
+          ARCHIVE_TAR="$PWD/repo.tar.gz"
 
-          CLONE_URL="$SERVER_URL/$REPO_FULL.git"
+          ARCHIVE_URL="$SERVER_URL/api/v1/repos/$REPO_FULL/archive/$SHA.tar.gz"
+          AUTH_HEADER=""
           if [ -n "${GITEA_TOKEN:-}" ]; then
-            CLONE_URL="$(printf '%s' "$SERVER_URL" | sed 's#://#://x-access-token:'"$GITEA_TOKEN"'@#')/$REPO_FULL.git"
+            AUTH_HEADER="Authorization: token $GITEA_TOKEN"
           fi
 
-          git init "$WORKSPACE"
-          git -C "$WORKSPACE" remote add origin "$CLONE_URL"
-          git -C "$WORKSPACE" fetch --depth 1 origin "$SHA"
-          git -C "$WORKSPACE" checkout --detach FETCH_HEAD
+          if [ -n "$AUTH_HEADER" ]; then
+            curl -fsSL -H "$AUTH_HEADER" "$ARCHIVE_URL" -o "$ARCHIVE_TAR"
+          else
+            curl -fsSL "$ARCHIVE_URL" -o "$ARCHIVE_TAR"
+          fi
+
+          tar -xzf "$ARCHIVE_TAR" -C "$WORKSPACE" --strip-components=1
 
           echo "Using workspace: $WORKSPACE"
           ls -la "$WORKSPACE"
