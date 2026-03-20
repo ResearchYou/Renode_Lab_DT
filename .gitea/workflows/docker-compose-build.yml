@@ -1,0 +1,29 @@
+name: docker-compose-build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  compose-build:
+    runs-on: debian-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Docker CLI + Compose
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends docker.io docker-compose-v2 ca-certificates
+
+      - name: Verify Docker availability
+        run: |
+          docker version
+          docker compose version
+
+      - name: Build all compose services
+        run: docker compose build
