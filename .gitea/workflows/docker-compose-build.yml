@@ -16,40 +16,34 @@ jobs:
   compose-build:
     runs-on: debian-latest
     steps:
-      - name: Ensure Node runtime for JS actions
+      - name: Fetch source archive (Node-free)
         run: |
           set -eu
 
-          if command -v node >/dev/null 2>&1; then
-            node --version
-            exit 0
-          fi
-
-          if command -v sudo >/dev/null 2>&1; then
-            SUDO=sudo
-          elif [ "$(id -u)" -eq 0 ]; then
-            SUDO=""
-          else
-            echo "Node is missing and no root/sudo is available to install it."
+          REPO_FULL="${GITHUB_REPOSITORY:-${GITEA_REPOSITORY:-}}"
+          SHA="${GITHUB_SHA:-${GITEA_SHA:-}}"
+          SERVER_URL="${GITHUB_SERVER_URL:-${GITEA_SERVER_URL:-}}"
+          if [ -z "$REPO_FULL" ] || [ -z "$SHA" ] || [ -z "$SERVER_URL" ]; then
+            echo "Missing repository context (REPO/SHA/SERVER_URL)."
             exit 1
           fi
 
-          if command -v apt-get >/dev/null 2>&1; then
-            $SUDO apt-get update
-            $SUDO apt-get install -y --no-install-recommends nodejs npm ca-certificates
-          elif command -v dnf >/dev/null 2>&1; then
-            $SUDO dnf -y install nodejs ca-certificates
-          elif command -v apk >/dev/null 2>&1; then
-            $SUDO apk add --no-cache nodejs npm ca-certificates
-          else
-            echo "Unsupported package manager; install Node.js on the runner image."
+          ARCHIVE_URL="$SERVER_URL/api/v1/repos/$REPO_FULL/archive/$SHA.tar.gz"
+          WORKSPACE="$PWD/workspace"
+          ARCHIVE_TAR="$PWD/repo.tgz"
+          rm -rf "$WORKSPACE"
+          mkdir -p "$WORKSPACE"
+
+          if [ -z "${{ secrets.REPO_READ_TOKEN }}" ]; then
+            echo "Missing REPO_READ_TOKEN secret."
             exit 1
           fi
 
-          node --version
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
+          curl -fsSL -H "Authorization: token ${{ secrets.REPO_READ_TOKEN }}" "$ARCHIVE_URL" -o "$ARCHIVE_TAR"
+          tar -xzf "$ARCHIVE_TAR" -C "$WORKSPACE" --strip-components=1
+          test -f "$WORKSPACE/docker-compose.yml"
+          echo "Workspace prepared at $WORKSPACE"
+          ls -la "$WORKSPACE"
 
       - name: Ensure Docker + Compose availability
         run: |
@@ -71,4 +65,5 @@ jobs:
       - name: Build all compose services
         run: |
           set -eu
+          cd "$PWD/workspace"
           docker compose build
