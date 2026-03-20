@@ -8,6 +8,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: sh
+
 jobs:
   compose-build:
     runs-on: debian-latest
@@ -29,31 +33,13 @@ jobs:
         run: |
           set -eu
 
-          if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-            echo "Docker and Compose already available"
-            docker version
-            docker compose version
-            exit 0
-          fi
-
-          if command -v sudo >/dev/null 2>&1; then
-            SUDO=sudo
-          elif [ "$(id -u)" -eq 0 ]; then
-            SUDO=""
-          else
-            echo "Docker Compose is missing and no root/sudo is available to install it."
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "Docker is not available on this runner."
             exit 1
           fi
 
-          if command -v apt-get >/dev/null 2>&1; then
-            $SUDO apt-get update
-            $SUDO apt-get install -y --no-install-recommends docker.io docker-compose-v2 ca-certificates
-          elif command -v dnf >/dev/null 2>&1; then
-            $SUDO dnf -y install docker docker-compose-plugin ca-certificates
-          elif command -v apk >/dev/null 2>&1; then
-            $SUDO apk add --no-cache docker-cli docker-cli-compose ca-certificates
-          else
-            echo "Unsupported package manager; install Docker and Docker Compose on the runner manually."
+          if ! docker compose version >/dev/null 2>&1; then
+            echo "Docker Compose plugin is not available on this runner."
             exit 1
           fi
 
