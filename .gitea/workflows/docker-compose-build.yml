@@ -10,40 +10,48 @@ jobs:
   compose-build:
     runs-on: debian-latest
     steps:
-      - name: Ensure Node runtime for JS actions
+      - name: Resolve source directory (Node-free)
         run: |
           set -eu
 
-          if command -v node >/dev/null 2>&1; then
-            node --version
-            exit 0
+          REPO_FULL="${GITHUB_REPOSITORY:-${GITEA_REPOSITORY:-cez/Renode_DT}}"
+          REPO_NAME="${REPO_FULL##*/}"
+          SOURCE_DIR=""
+
+          for CANDIDATE in "$PWD" "${GITHUB_WORKSPACE:-}" "${GITEA_WORKSPACE:-}" "$PWD/$REPO_NAME" "/workspace/$REPO_NAME" "/__w/$REPO_NAME/$REPO_NAME"; do
+            if [ -n "$CANDIDATE" ] && [ -f "$CANDIDATE/docker-compose.yml" ]; then
+              SOURCE_DIR="$CANDIDATE"
+              break
+            fi
+          done
+
+          if [ -z "$SOURCE_DIR" ]; then
+            FOUND="$(find /workspace /__w . -maxdepth 6 -type f -name docker-compose.yml 2>/dev/null | head -n1 || true)"
+            if [ -n "$FOUND" ]; then
+              SOURCE_DIR="$(dirname "$FOUND")"
+            fi
           fi
 
-          if command -v sudo >/dev/null 2>&1; then
-            SUDO=sudo
-          elif [ "$(id -u)" -eq 0 ]; then
-            SUDO=""
-          else
-            echo "Node is missing and no root/sudo is available to install it."
-            exit 1
+          if [ -z "$SOURCE_DIR" ]; then
+            if ! command -v git >/dev/null 2>&1; then
+              echo "Source not found and git is unavailable for fallback clone."
+              exit 1
+            fi
+            if [ -z "${GITEA_TOKEN:-}" ]; then
+              echo "Source not found and GITEA_TOKEN is unavailable for fallback clone."
+              exit 1
+            fi
+            SERVER_URL="${GITHUB_SERVER_URL:-${GITEA_SERVER_URL:-https://gitea.cyb3rhell.com}}"
+            CLONE_URL="$(printf '%s' "$SERVER_URL" | sed 's#://#://x-access-token:'"$GITEA_TOKEN"'@#')/$REPO_FULL.git"
+            SOURCE_DIR="$PWD/repo-src"
+            rm -rf "$SOURCE_DIR"
+            git clone --depth 1 "$CLONE_URL" "$SOURCE_DIR"
           fi
 
-          if command -v apt-get >/dev/null 2>&1; then
-            $SUDO apt-get update
-            $SUDO apt-get install -y --no-install-recommends nodejs npm ca-certificates
-          elif command -v dnf >/dev/null 2>&1; then
-            $SUDO dnf -y install nodejs ca-certificates
-          elif command -v apk >/dev/null 2>&1; then
-            $SUDO apk add --no-cache nodejs npm ca-certificates
-          else
-            echo "Unsupported package manager; install Node.js on the runner image."
-            exit 1
-          fi
-
-          node --version
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
+          test -f "$SOURCE_DIR/docker-compose.yml"
+          printf '%s\n' "$SOURCE_DIR" > .source-dir
+          echo "Using source dir: $SOURCE_DIR"
+          ls -la "$SOURCE_DIR"
 
       - name: Ensure Docker + Compose availability
         run: |
@@ -65,4 +73,6 @@ jobs:
       - name: Build all compose services
         run: |
           set -eu
+          SOURCE_DIR="$(cat .source-dir)"
+          cd "$SOURCE_DIR"
           docker compose build
