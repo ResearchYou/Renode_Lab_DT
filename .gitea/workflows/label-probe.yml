@@ -1,0 +1,35 @@
+name: label-probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  debian_probe:
+    runs-on: debian-latest
+    steps:
+      - run: |
+          set -eu
+          echo "label=debian-latest"
+          command -v node && node -v
+          command -v docker && docker version
+
+  alpine_probe:
+    runs-on: alpine-latest
+    steps:
+      - run: |
+          set -eu
+          echo "label=alpine-latest"
+          command -v node && node -v
+          command -v docker && docker version
+
+  fedora_probe:
+    runs-on: fedora-latest
+    steps:
+      - run: |
+          set -eu
+          echo "label=fedora-latest"
+          command -v node && node -v
+          command -v docker && docker version
