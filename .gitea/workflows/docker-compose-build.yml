@@ -8,20 +8,52 @@ on:
   pull_request:
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: sh
+
 jobs:
   compose-build:
     runs-on: debian-latest
     steps:
-      - name: Verify workspace (Node-free checkout path)
+      - name: Ensure Node runtime for JS actions
         run: |
-          set -euo pipefail
-          pwd
-          ls -la
-          test -f docker-compose.yml
+          set -eu
+
+          if command -v node >/dev/null 2>&1; then
+            node --version
+            exit 0
+          fi
+
+          if command -v sudo >/dev/null 2>&1; then
+            SUDO=sudo
+          elif [ "$(id -u)" -eq 0 ]; then
+            SUDO=""
+          else
+            echo "Node is missing and no root/sudo is available to install it."
+            exit 1
+          fi
+
+          if command -v apt-get >/dev/null 2>&1; then
+            $SUDO apt-get update
+            $SUDO apt-get install -y --no-install-recommends nodejs npm git ca-certificates
+          elif command -v dnf >/dev/null 2>&1; then
+            $SUDO dnf -y install nodejs git ca-certificates
+          elif command -v apk >/dev/null 2>&1; then
+            $SUDO apk add --no-cache nodejs npm git ca-certificates
+          else
+            echo "Unsupported package manager; install Node.js on the runner image."
+            exit 1
+          fi
+
+          node --version
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Ensure Docker + Compose availability
         run: |
-          set -euo pipefail
+          set -eu
 
           if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
             echo "Docker and Compose already available"
