@@ -8,75 +8,22 @@ on:
   pull_request:
   workflow_dispatch:
 
-defaults:
-  run:
-    shell: sh
-
 jobs:
   compose-build:
     runs-on: debian-latest
     steps:
-      - name: Prepare workspace without JS actions
+      - name: Resolve compose directory
         run: |
           set -eu
-
-          if command -v sudo >/dev/null 2>&1; then
-            SUDO=sudo
-          elif [ "$(id -u)" -eq 0 ]; then
-            SUDO=""
-          else
-            SUDO=""
-          fi
-
-          if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1; then
-            if [ -n "$SUDO" ] || [ "$(id -u)" -eq 0 ]; then
-              if command -v apt-get >/dev/null 2>&1; then
-                $SUDO apt-get update
-                $SUDO apt-get install -y --no-install-recommends curl tar ca-certificates
-              elif command -v dnf >/dev/null 2>&1; then
-                $SUDO dnf -y install curl tar ca-certificates
-              elif command -v apk >/dev/null 2>&1; then
-                $SUDO apk add --no-cache curl tar ca-certificates
-              else
-                echo "Unsupported package manager; install curl+tar on runner image."
-                exit 1
-              fi
-            else
-              echo "curl/tar missing and no root/sudo is available to install them."
-              exit 1
-            fi
-          fi
-
-          REPO_FULL="${GITHUB_REPOSITORY:-${GITEA_REPOSITORY:-}}"
-          SHA="${GITHUB_SHA:-${GITEA_SHA:-}}"
-          SERVER_URL="${GITHUB_SERVER_URL:-${GITEA_SERVER_URL:-}}"
-          if [ -z "$REPO_FULL" ] || [ -z "$SHA" ] || [ -z "$SERVER_URL" ]; then
-            echo "Missing repository context (REPO/SHA/SERVER_URL)."
+          COMPOSE_FILE="$(find . -maxdepth 5 -type f -name docker-compose.yml | head -n1 || true)"
+          if [ -z "$COMPOSE_FILE" ]; then
+            echo "docker-compose.yml not found in runner workspace."
             exit 1
           fi
-
-          WORKSPACE="$PWD/workspace"
-          rm -rf "$WORKSPACE"
-          mkdir -p "$WORKSPACE"
-          ARCHIVE_TAR="$PWD/repo.tar.gz"
-
-          ARCHIVE_URL="$SERVER_URL/api/v1/repos/$REPO_FULL/archive/$SHA.tar.gz"
-          AUTH_HEADER=""
-          if [ -n "${GITEA_TOKEN:-}" ]; then
-            AUTH_HEADER="Authorization: token $GITEA_TOKEN"
-          fi
-
-          if [ -n "$AUTH_HEADER" ]; then
-            curl -fsSL -H "$AUTH_HEADER" "$ARCHIVE_URL" -o "$ARCHIVE_TAR"
-          else
-            curl -fsSL "$ARCHIVE_URL" -o "$ARCHIVE_TAR"
-          fi
-
-          tar -xzf "$ARCHIVE_TAR" -C "$WORKSPACE" --strip-components=1
-
-          echo "Using workspace: $WORKSPACE"
-          ls -la "$WORKSPACE"
-          test -f "$WORKSPACE/docker-compose.yml"
+          COMPOSE_DIR="$(dirname "$COMPOSE_FILE")"
+          echo "$COMPOSE_DIR" > .compose-dir
+          echo "Using compose directory: $COMPOSE_DIR"
+          ls -la "$COMPOSE_DIR"
 
       - name: Ensure Docker + Compose availability
         run: |
@@ -116,7 +63,6 @@ jobs:
       - name: Build all compose services
         run: |
           set -eu
-          WORKSPACE="$PWD/workspace"
-          test -f "$WORKSPACE/docker-compose.yml"
-          cd "$WORKSPACE"
+          COMPOSE_DIR="$(cat .compose-dir)"
+          cd "$COMPOSE_DIR"
           docker compose build
