@@ -12,8 +12,12 @@ jobs:
   compose-build:
     runs-on: debian-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Verify workspace (Node-free checkout path)
+        run: |
+          set -euo pipefail
+          pwd
+          ls -la
+          test -f docker-compose.yml
 
       - name: Ensure Docker + Compose availability
         run: |
