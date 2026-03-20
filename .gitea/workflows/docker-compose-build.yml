@@ -3,69 +3,27 @@ name: docker-compose-build
 on:
   push:
     branches:
-      - main
       - master
-  pull_request:
   workflow_dispatch:
-
-defaults:
-  run:
-    shell: sh
 
 jobs:
   compose-build:
     runs-on: debian-latest
     steps:
-      - name: Fetch source archive (Node-free)
-        env:
-          REPO_READ_TOKEN: ${{ secrets.REPO_READ_TOKEN }}
+      - name: Preflight runner info
         run: |
-          set -eu
+          uname -a || true
+          id || true
+          pwd
+          ls -la
 
-          REPO_FULL="${GITHUB_REPOSITORY:-${GITEA_REPOSITORY:-}}"
-          SHA="${GITHUB_SHA:-${GITEA_SHA:-}}"
-          SERVER_URL="${GITHUB_SERVER_URL:-${GITEA_SERVER_URL:-}}"
-          if [ -z "$REPO_FULL" ] || [ -z "$SHA" ] || [ -z "$SERVER_URL" ]; then
-            echo "Missing repository context (REPO/SHA/SERVER_URL)."
-            exit 1
-          fi
-
-          ARCHIVE_URL="$SERVER_URL/api/v1/repos/$REPO_FULL/archive/$SHA.tar.gz"
-          WORKSPACE="$PWD/workspace"
-          ARCHIVE_TAR="$PWD/repo.tgz"
-          rm -rf "$WORKSPACE"
-          mkdir -p "$WORKSPACE"
-
-          if [ -z "${REPO_READ_TOKEN:-}" ]; then
-            echo "Missing REPO_READ_TOKEN secret."
-            exit 1
-          fi
-
-          curl -fsSL -H "Authorization: token $REPO_READ_TOKEN" "$ARCHIVE_URL" -o "$ARCHIVE_TAR"
-          tar -xzf "$ARCHIVE_TAR" -C "$WORKSPACE" --strip-components=1
-          test -f "$WORKSPACE/docker-compose.yml"
-          echo "Workspace prepared at $WORKSPACE"
-          ls -la "$WORKSPACE"
-
-      - name: Ensure Docker + Compose availability
+      - name: Check docker and compose
         run: |
-          set -eu
-
-          if ! command -v docker >/dev/null 2>&1; then
-            echo "Docker is not available on this runner."
-            exit 1
-          fi
-
-          if ! docker compose version >/dev/null 2>&1; then
-            echo "Docker Compose plugin is not available on this runner."
-            exit 1
-          fi
-
+          command -v docker
           docker version
           docker compose version
 
-      - name: Build all compose services
+      - name: Build in current workspace
         run: |
-          set -eu
-          cd "$PWD/workspace"
+          test -f docker-compose.yml
           docker compose build
