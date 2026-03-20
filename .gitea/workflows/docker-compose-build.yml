@@ -16,40 +16,38 @@ jobs:
   compose-build:
     runs-on: debian-latest
     steps:
-      - name: Ensure Node runtime for JS actions
+      - name: Locate repository workspace (Node-free)
         run: |
           set -eu
 
-          if command -v node >/dev/null 2>&1; then
-            node --version
-            exit 0
+          REPO_FULL="${GITHUB_REPOSITORY:-${GITEA_REPOSITORY:-}}"
+          REPO_NAME="${REPO_FULL##*/}"
+          if [ -z "$REPO_NAME" ] || [ "$REPO_NAME" = "$REPO_FULL" ]; then
+            REPO_NAME="Renode_DT"
           fi
 
-          if command -v sudo >/dev/null 2>&1; then
-            SUDO=sudo
-          elif [ "$(id -u)" -eq 0 ]; then
-            SUDO=""
-          else
-            echo "Node is missing and no root/sudo is available to install it."
+          WORKSPACE=""
+          for CANDIDATE in "${GITHUB_WORKSPACE:-}" "${GITEA_WORKSPACE:-}" "$PWD" "$PWD/$REPO_NAME" "/workspace/$REPO_NAME" "/__w/$REPO_NAME/$REPO_NAME"; do
+            if [ -n "$CANDIDATE" ] && [ -f "$CANDIDATE/docker-compose.yml" ]; then
+              WORKSPACE="$CANDIDATE"
+              break
+            fi
+          done
+
+          if [ -z "$WORKSPACE" ]; then
+            FOUND_COMPOSE="$(find . -maxdepth 5 -type f -name docker-compose.yml | head -n1 || true)"
+            if [ -n "$FOUND_COMPOSE" ]; then
+              WORKSPACE="$(dirname "$FOUND_COMPOSE")"
+            fi
+          fi
+
+          if [ -z "$WORKSPACE" ]; then
+            echo "Could not locate docker-compose.yml in runner workspace."
             exit 1
           fi
 
-          if command -v apt-get >/dev/null 2>&1; then
-            $SUDO apt-get update
-            $SUDO apt-get install -y --no-install-recommends nodejs npm git ca-certificates
-          elif command -v dnf >/dev/null 2>&1; then
-            $SUDO dnf -y install nodejs git ca-certificates
-          elif command -v apk >/dev/null 2>&1; then
-            $SUDO apk add --no-cache nodejs npm git ca-certificates
-          else
-            echo "Unsupported package manager; install Node.js on the runner image."
-            exit 1
-          fi
-
-          node --version
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
+          echo "Using workspace: $WORKSPACE"
+          ls -la "$WORKSPACE"
 
       - name: Ensure Docker + Compose availability
         run: |
@@ -87,4 +85,33 @@ jobs:
           docker compose version
 
       - name: Build all compose services
-        run: docker compose build
+        run: |
+          set -eu
+          REPO_FULL="${GITHUB_REPOSITORY:-${GITEA_REPOSITORY:-}}"
+          REPO_NAME="${REPO_FULL##*/}"
+          if [ -z "$REPO_NAME" ] || [ "$REPO_NAME" = "$REPO_FULL" ]; then
+            REPO_NAME="Renode_DT"
+          fi
+
+          WORKSPACE=""
+          for CANDIDATE in "${GITHUB_WORKSPACE:-}" "${GITEA_WORKSPACE:-}" "$PWD" "$PWD/$REPO_NAME" "/workspace/$REPO_NAME" "/__w/$REPO_NAME/$REPO_NAME"; do
+            if [ -n "$CANDIDATE" ] && [ -f "$CANDIDATE/docker-compose.yml" ]; then
+              WORKSPACE="$CANDIDATE"
+              break
+            fi
+          done
+
+          if [ -z "$WORKSPACE" ]; then
+            FOUND_COMPOSE="$(find . -maxdepth 5 -type f -name docker-compose.yml | head -n1 || true)"
+            if [ -n "$FOUND_COMPOSE" ]; then
+              WORKSPACE="$(dirname "$FOUND_COMPOSE")"
+            fi
+          fi
+
+          if [ -z "$WORKSPACE" ]; then
+            echo "Could not locate docker-compose.yml for build step."
+            exit 1
+          fi
+
+          cd "$WORKSPACE"
+          docker compose build
