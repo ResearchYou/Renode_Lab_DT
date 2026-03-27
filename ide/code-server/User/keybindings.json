@@ -1,0 +1,11 @@
+[
+  {
+    "key": "ctrl+k v",
+    "command": "markdown.showPreviewToSide",
+    "when": "editorLangId == markdown"
+  },
+  {
+    "key": "ctrl+alt+v",
+    "command": "workbench.action.splitEditorRight"
+  }
+]

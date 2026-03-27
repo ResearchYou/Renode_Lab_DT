@@ -1,0 +1,24 @@
+{
+  "workbench.colorTheme": "Solarized Dark",
+  "workbench.editor.wrapTabs": true,
+  "workbench.editor.enablePreview": false,
+  "workbench.startupEditor": "none",
+  "editor.minimap.enabled": false,
+  "editor.fontLigatures": true,
+  "editor.formatOnSave": true,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 500,
+  "clangd.path": "/usr/bin/clangd",
+  "clangd.arguments": [
+    "--background-index",
+    "--clang-tidy",
+    "--completion-style=detailed",
+    "--header-insertion=never"
+  ],
+  "markdown.preview.breaks": true,
+  "workbench.editorAssociations": {
+    "*.pdf": "pdf.preview"
+  },
+  "extensions.autoCheckUpdates": false,
+  "extensions.autoUpdate": false
+}

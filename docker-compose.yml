@@ -34,3 +34,23 @@ services:
     entrypoint: ["/bin/bash", "-c", "/workspace/scripts/build_firmware.sh && /workspace/scripts/run_metrics.sh"]
     profiles:
       - metrics
+
+  ide:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ide
+      network: host
+    container_name: challenge-ide
+    security_opt:
+      - label:disable
+    ports:
+      - "8443:8080"
+    environment:
+      - "HOST_PROJECT_DIR=${PWD}"
+      - "RUNNER_SERVICE=digital-twin"
+    volumes:
+      - ./firmware:/home/coder/challenge/firmware:z
+      - ./ide/problem:/home/coder/challenge/problem:z
+      - ./output:/home/coder/challenge/output:z
+      - ./docker-compose.yml:/home/coder/docker-compose.yml:ro,z
+      - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock"

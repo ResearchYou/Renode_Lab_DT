@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Challenge IDE</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; overflow: hidden; background: #1e1e1e; }
+
+  #layout {
+    display: flex;
+    height: 100vh;
+  }
+
+  /* ── Editor pane ─────────────────────────────────────────────── */
+  #editor-pane {
+    flex: 1;
+    min-width: 0;
+  }
+  #editor-pane iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  /* ── Side panel ──────────────────────────────────────────────── */
+  #side-panel {
+    width: 32%;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #3c3c3c;
+    overflow: hidden;
+    transition: width 0.25s ease, min-width 0.25s ease;
+  }
+  #side-panel.collapsed {
+    width: 0;
+    min-width: 0;
+  }
+
+  .panel-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-block + .panel-block {
+    border-top: 2px solid #3c3c3c;
+  }
+
+  .panel-header {
+    background: #252526;
+    color: #bbbbbb;
+    font-size: 11px;
+    font-family: 'Segoe UI', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    user-select: none;
+    border-bottom: 1px solid #3c3c3c;
+  }
+
+  .panel-body {
+    flex: 1;
+    overflow: auto;
+    background: #1e1e1e;
+  }
+  .panel-body iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  /* ── Spec markdown styles ─────────────────────────────────────── */
+  #spec-content {
+    padding: 16px 18px;
+    color: #d4d4d4;
+    font-size: 13px;
+    line-height: 1.65;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  #spec-content h1, #spec-content h2, #spec-content h3 {
+    color: #9cdcfe;
+    margin: 16px 0 6px;
+    font-weight: 600;
+  }
+  #spec-content h1 { font-size: 16px; margin-top: 0; }
+  #spec-content h2 { font-size: 14px; }
+  #spec-content h3 { font-size: 13px; color: #4ec9b0; }
+  #spec-content p  { margin: 6px 0; }
+  #spec-content ul, #spec-content ol {
+    padding-left: 20px;
+    margin: 6px 0;
+  }
+  #spec-content li { margin: 3px 0; }
+  #spec-content code {
+    background: #2d2d2d;
+    color: #ce9178;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'Cascadia Code', 'Fira Mono', monospace;
+    font-size: 12px;
+  }
+  #spec-content pre {
+    background: #2d2d2d;
+    padding: 10px 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 8px 0;
+    border-left: 3px solid #0e639c;
+  }
+  #spec-content pre code {
+    background: none;
+    padding: 0;
+    color: #d4d4d4;
+    font-size: 12px;
+  }
+  #spec-content a { color: #4fc3f7; }
+  #spec-content strong { color: #ffffff; }
+  #spec-content hr {
+    border: none;
+    border-top: 1px solid #3c3c3c;
+    margin: 12px 0;
+  }
+
+  /* ── Toggle button (fixed, top-right corner) ─────────────────── */
+  #toggle-btn {
+    position: fixed;
+    top: 8px;
+    right: 8px;
+    z-index: 9999;
+    background: #0e639c;
+    color: #ffffff;
+    border: none;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-family: 'Segoe UI', sans-serif;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  #toggle-btn:hover { background: #1177bb; }
+
+  /* ── Small action button inside panel headers ─────────────────── */
+  .btn-sm {
+    background: #3a3d41;
+    color: #cccccc;
+    border: none;
+    padding: 2px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-family: inherit;
+  }
+  .btn-sm:hover { background: #505357; }
+
+  /* ── No-report placeholder ────────────────────────────────────── */
+  #results-placeholder {
+    padding: 20px;
+    color: #6a9955;
+    font-size: 12px;
+    font-family: monospace;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="layout">
+
+  <div id="editor-pane">
+    <iframe src="/cs/" title="Code Editor"></iframe>
+  </div>
+
+  <div id="side-panel">
+
+    <!-- ── Spec quarter ── -->
+    <div class="panel-block">
+      <div class="panel-header">
+        <span>Task Specification</span>
+      </div>
+      <div class="panel-body">
+        <div id="spec-content">Loading…</div>
+      </div>
+    </div>
+
+    <!-- ── Results quarter ── -->
+    <div class="panel-block">
+      <div class="panel-header">
+        <span>Test Results</span>
+        <button class="btn-sm" onclick="reloadResults()" title="Reload report">↻ Refresh</button>
+      </div>
+      <div class="panel-body">
+        <iframe id="results-frame" src="/output/report.html" title="Test Results"
+                onload="onResultsLoad(this)" onerror="showPlaceholder()"></iframe>
+        <div id="results-placeholder">
+          No report yet.<br>Run the test container to generate one.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<button id="toggle-btn" onclick="togglePanel()">&#9664; Hide Panel</button>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+<script>
+  /* ── Panel toggle ─────────────────────────────────────────────── */
+  let panelOpen = true;
+
+  function togglePanel() {
+    panelOpen = !panelOpen;
+    document.getElementById('side-panel').classList.toggle('collapsed', !panelOpen);
+    document.getElementById('toggle-btn').innerHTML =
+      panelOpen ? '&#9664; Hide Panel' : '&#9654; Panel';
+  }
+
+  /* ── Results iframe helpers ───────────────────────────────────── */
+  function reloadResults() {
+    const frame = document.getElementById('results-frame');
+    document.getElementById('results-placeholder').style.display = 'none';
+    frame.style.display = 'block';
+    frame.src = '/output/report.html?_=' + Date.now();
+  }
+
+  function onResultsLoad(frame) {
+    // If the page loaded but is an nginx 404, show placeholder instead
+    try {
+      const title = frame.contentDocument && frame.contentDocument.title;
+      if (!title || title === '404 Not Found') showPlaceholder();
+    } catch (_) { /* cross-origin guard — shouldn't happen on same origin */ }
+  }
+
+  function showPlaceholder() {
+    document.getElementById('results-frame').style.display = 'none';
+    document.getElementById('results-placeholder').style.display = 'block';
+  }
+
+  /* ── Spec markdown ────────────────────────────────────────────── */
+  fetch('/spec/problem.md')
+    .then(r => r.ok ? r.text() : Promise.reject(r.status))
+    .then(md => {
+      document.getElementById('spec-content').innerHTML = marked.parse(md);
+    })
+    .catch(() => {
+      document.getElementById('spec-content').textContent =
+        'Specification not available.';
+    });
+</script>
+</body>
+</html>
