@@ -423,7 +423,6 @@ static void run_slave(void)
 
 int main(void)
 {
-    return 0;
     uart_init();
 
     if (g_role_flag == ROLE_MASTER)
@@ -432,5 +431,4 @@ int main(void)
         run_slave();
 
     while (1) __asm volatile("wfi");
-    return 0;
 }
