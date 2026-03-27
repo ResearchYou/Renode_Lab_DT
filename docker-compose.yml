@@ -1,39 +1,22 @@
 services:
-  digital-twin:
+  spi-twin:
+    image: spi-twin-test
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.spi
       network: host
     dns:
       - 8.8.8.8
       - 8.8.4.4
-    container_name: rp2040-digital-twin
+    container_name: stm32-spi-twin
     security_opt:
       - label:disable
     volumes:
       - ./firmware:/workspace/firmware:ro,z
       - ./renode:/workspace/renode:ro,z
       - ./output:/workspace/output:z
-    entrypoint: ["/bin/bash", "/workspace/scripts/entrypoint.sh"]
-
-  digital-twin-metrics:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      network: host
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    container_name: rp2040-digital-twin-metrics
-    security_opt:
-      - label:disable
-    volumes:
-      - ./firmware:/workspace/firmware:ro,z
-      - ./renode:/workspace/renode:ro,z
-      - ./output:/workspace/output:z
-    entrypoint: ["/bin/bash", "-c", "/workspace/scripts/build_firmware.sh && /workspace/scripts/run_metrics.sh"]
-    profiles:
-      - metrics
+      - ./build:/workspace/build:z
+    entrypoint: ["/bin/bash", "-c", "/workspace/scripts/build_spi_firmware.sh && /workspace/scripts/run_spi_test.sh"]
 
   ide:
     build:
@@ -47,7 +30,7 @@ services:
       - "8443:8080"
     environment:
       - "HOST_PROJECT_DIR=${PWD}"
-      - "RUNNER_SERVICE=digital-twin"
+      - "RUNNER_SERVICE=spi-twin"
     volumes:
       - ./firmware:/home/coder/challenge/firmware:z
       - ./ide/problem:/home/coder/challenge/problem:z

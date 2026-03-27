@@ -1,0 +1,61 @@
+# spi_test.resc
+# Two STM32F746 boards connected via a custom SPI protocol.
+# The same ELF is loaded on both; the role word is written into SRAM
+# before execution starts.
+
+# Load custom C# peripherals (compiled at runtime by Renode's Mono)
+include @/workspace/renode/peripherals/SPISlaveController.cs
+include @/workspace/renode/peripherals/SPIBridgeSlave.cs
+
+# ── SLAVE board (create first so the master bridge can find it by name) ──
+mach create "slave"
+machine LoadPlatformDescription @platforms/cpus/stm32f746.repl
+
+# Add bridge controller at 0x50000000; its IRQ output wires to NVIC input 58
+# (= DMA2_Stream2_IRQn, repurposed on the slave as the "packet arrived" ISR).
+machine LoadPlatformDescriptionFromString """
+spiSlaveCtrl: SPI.SPISlaveController @ sysbus 0x50000000
+    -> nvic@58
+"""
+
+# uart1 = USART1 @ 0x40011000 in Renode's stm32f746 platform
+sysbus.usart1 CreateFileBackend @/workspace/output/slave_uart.txt true
+logLevel -1 sysbus.spiSlaveCtrl
+
+# ── MASTER board ─────────────────────────────────────────────────────────
+mach create "master"
+machine LoadPlatformDescription @platforms/cpus/stm32f746.repl
+
+# Register SPIBridgeSlave at SPI1 CS=0, targeting the slave machine by name.
+# TargetMachineName is resolved lazily on first Transmit() call.
+machine LoadPlatformDescriptionFromString """
+spiBridge: SPI.SPIBridgeSlave @ spi1
+    TargetMachineName: "slave"
+"""
+
+sysbus.usart1 CreateFileBackend @/workspace/output/master_uart.txt true
+logLevel -1 spi1.spiBridge
+
+# ── Load firmware ────────────────────────────────────────────────────────
+mach set "master"
+sysbus LoadELF @/workspace/build/spi_test.elf
+# g_role_flag is at the start of .noinit = 0x20000000; write MASTER=1
+sysbus WriteDoubleWord 0x20000000 0x00000001
+
+mach set "slave"
+sysbus LoadELF @/workspace/build/spi_test.elf
+# Write SLAVE=0
+sysbus WriteDoubleWord 0x20000000 0x00000000
+
+# ── Emulation settings ───────────────────────────────────────────────────
+# 1 µs quantum: after each 1 µs of master execution the slave gets 1 µs,
+# ensuring the slave ISR runs inside the master's ~12 ms delay loop.
+emulation SetGlobalQuantum "0.000001"
+
+# Capture Renode log for post-run analysis
+logFile @/workspace/output/renode.log true
+
+echo "Starting dual-board SPI test (3 s virtual time)..."
+emulation RunFor "00:00:03"
+echo "Emulation complete"
+quit
