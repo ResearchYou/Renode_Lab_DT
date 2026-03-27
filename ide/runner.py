@@ -15,7 +15,7 @@ import threading
 
 COMPOSE_FILE = "/home/coder/docker-compose.yml"
 PROJECT_DIR = os.environ.get("HOST_PROJECT_DIR", "")
-RUNNER_SERVICE = os.environ.get("RUNNER_SERVICE", "spi-twin")
+RUNNER_SERVICE = os.environ.get("RUNNER_SERVICE", "digital-twin")
 
 _lock = threading.Lock()
 _current = None  # active Popen
@@ -35,7 +35,7 @@ def run_test(emit):
     try:
         os.makedirs(PROJECT_DIR, exist_ok=True)
         os.makedirs(os.path.join(PROJECT_DIR, "docker"), exist_ok=True)
-        with open(os.path.join(PROJECT_DIR, "docker", "Dockerfile.spi"), "a"):
+        with open(os.path.join(PROJECT_DIR, "docker", "Dockerfile"), "a"):
             pass
         with open(os.path.join(PROJECT_DIR, "docker", "Dockerfile.ide"), "a"):
             pass
