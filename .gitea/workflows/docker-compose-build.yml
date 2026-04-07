@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - master-restructure
+      - dev/*
   workflow_dispatch:
 
 jobs:
@@ -111,3 +112,41 @@ jobs:
           SOURCE_DIR="$(cat .source-dir)"
           cd "$SOURCE_DIR"
           docker compose build
+
+      - name: Sanity check - code-server and Renode
+        run: |
+          set -eu
+          SOURCE_DIR="$(cat .source-dir)"
+          cd "$SOURCE_DIR"
+
+          cleanup() {
+            echo "--- cleanup ---"
+            docker compose down --remove-orphans || true
+          }
+          trap cleanup EXIT
+
+          # Start IDE in detached mode
+          docker compose up -d ide
+
+          # Poll until nginx/code-server responds on the exposed port
+          echo "Waiting for code-server on :8443..."
+          CODE_SERVER_UP=false
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8443 >/dev/null 2>&1; then
+              CODE_SERVER_UP=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$CODE_SERVER_UP" = "false" ]; then
+            echo "[FAIL] code-server did not respond on :8443 after 60s"
+            docker compose logs ide
+            exit 1
+          fi
+          echo "[PASS] code-server is listening on :8443"
+
+          # Run digital-twin one-shot: builds firmware and runs Renode test
+          echo "Running Renode digital-twin test..."
+          docker compose run --rm digital-twin
+          echo "[PASS] Renode test completed successfully"
