@@ -12,11 +12,17 @@ jobs:
     runs-on: debian-latest
     env:
       GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+      DOCKER_HOST: tcp://docker:2375
+    services:
+      docker:
+        image: docker:dind
+        env:
+          DOCKER_TLS_CERTDIR: ""
     steps:
       - name: Install required tools
         run: |
           apt-get update -qq
-          apt-get install -y -qq git curl
+          apt-get install -y -qq git curl docker.io
 
       - name: Resolve source directory (Node-free)
         run: |
