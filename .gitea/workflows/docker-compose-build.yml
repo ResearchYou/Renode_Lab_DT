@@ -36,20 +36,26 @@ jobs:
           fi
 
           if [ -z "$SOURCE_DIR" ]; then
-            if ! command -v git >/dev/null 2>&1; then
-              echo "Source not found and git is unavailable for fallback clone."
-              exit 1
-            fi
             if [ -z "${GITEA_TOKEN:-}" ]; then
-              echo "Source not found and GITEA_TOKEN is unavailable for fallback clone."
+              echo "Source not found and GITEA_TOKEN is unavailable for fallback download."
               exit 1
             fi
             SERVER_URL="${GITHUB_SERVER_URL:-${GITEA_SERVER_URL:-https://gitea.cyb3rhell.com}}"
-            CLONE_URL="$(printf '%s' "$SERVER_URL" | sed 's#://#://x-access-token:'"$GITEA_TOKEN"'@#')/$REPO_FULL.git"
             REF_BRANCH="${GITHUB_REF_NAME:-${GITEA_REF_NAME:-master}}"
+            ARCHIVE_URL="$SERVER_URL/$REPO_FULL/archive/$REF_BRANCH.tar.gz"
             SOURCE_DIR="$PWD/repo-src"
             rm -rf "$SOURCE_DIR"
-            git clone --depth 1 --branch "$REF_BRANCH" "$CLONE_URL" "$SOURCE_DIR"
+            mkdir -p "$SOURCE_DIR"
+            if command -v curl >/dev/null 2>&1; then
+              curl -fsSL -H "Authorization: token $GITEA_TOKEN" "$ARCHIVE_URL" \
+                | tar -xz -C "$SOURCE_DIR" --strip-components=1
+            elif command -v wget >/dev/null 2>&1; then
+              wget -qO- --header="Authorization: token $GITEA_TOKEN" "$ARCHIVE_URL" \
+                | tar -xz -C "$SOURCE_DIR" --strip-components=1
+            else
+              echo "Source not found and neither curl nor wget is available for fallback download."
+              exit 1
+            fi
           fi
 
           test -f "$SOURCE_DIR/docker-compose.yml"
