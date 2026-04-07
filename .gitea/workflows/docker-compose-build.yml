@@ -23,6 +23,10 @@ jobs:
         run: |
           apt-get update -qq
           apt-get install -y -qq git curl docker.io
+          mkdir -p /usr/local/lib/docker/cli-plugins
+          curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" \
+            -o /usr/local/lib/docker/cli-plugins/docker-compose
+          chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
       - name: Resolve source directory (Node-free)
         run: |
