@@ -4,11 +4,14 @@ on:
   push:
     branches:
       - master
+      - master-restructure
   workflow_dispatch:
 
 jobs:
   compose-build:
     runs-on: debian-latest
+    env:
+      GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
     steps:
       - name: Resolve source directory (Node-free)
         run: |
@@ -43,9 +46,10 @@ jobs:
             fi
             SERVER_URL="${GITHUB_SERVER_URL:-${GITEA_SERVER_URL:-https://gitea.cyb3rhell.com}}"
             CLONE_URL="$(printf '%s' "$SERVER_URL" | sed 's#://#://x-access-token:'"$GITEA_TOKEN"'@#')/$REPO_FULL.git"
+            REF_BRANCH="${GITHUB_REF_NAME:-${GITEA_REF_NAME:-master}}"
             SOURCE_DIR="$PWD/repo-src"
             rm -rf "$SOURCE_DIR"
-            git clone --depth 1 "$CLONE_URL" "$SOURCE_DIR"
+            git clone --depth 1 --branch "$REF_BRANCH" "$CLONE_URL" "$SOURCE_DIR"
           fi
 
           test -f "$SOURCE_DIR/docker-compose.yml"
