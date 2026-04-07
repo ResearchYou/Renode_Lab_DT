@@ -4,12 +4,25 @@ on:
   push:
     branches:
       - master
+      - master-restructure
+      - dev/*
   workflow_dispatch:
 
 jobs:
   compose-build:
     runs-on: debian-latest
+    env:
+      GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
     steps:
+      - name: Install required tools
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq git curl docker.io
+          mkdir -p /usr/local/lib/docker/cli-plugins
+          curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" \
+            -o /usr/local/lib/docker/cli-plugins/docker-compose
+          chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
       - name: Resolve source directory (Node-free)
         run: |
           set -eu
@@ -33,19 +46,36 @@ jobs:
           fi
 
           if [ -z "$SOURCE_DIR" ]; then
-            if ! command -v git >/dev/null 2>&1; then
-              echo "Source not found and git is unavailable for fallback clone."
-              exit 1
-            fi
+            echo "--- debug env ---"
+            echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY:-}"
+            echo "GITEA_REPOSITORY=${GITEA_REPOSITORY:-}"
+            echo "GITHUB_SERVER_URL=${GITHUB_SERVER_URL:-}"
+            echo "GITEA_SERVER_URL=${GITEA_SERVER_URL:-}"
+            echo "GITHUB_REF_NAME=${GITHUB_REF_NAME:-}"
+            echo "GITEA_REF_NAME=${GITEA_REF_NAME:-}"
+            echo "GITHUB_SHA=${GITHUB_SHA:-}"
+            echo "GITEA_TOKEN set=$([ -n "${GITEA_TOKEN:-}" ] && echo yes || echo no)"
+            echo "-----------------"
+
             if [ -z "${GITEA_TOKEN:-}" ]; then
-              echo "Source not found and GITEA_TOKEN is unavailable for fallback clone."
+              echo "Source not found and GITEA_TOKEN is unavailable for fallback download."
               exit 1
             fi
+
             SERVER_URL="${GITHUB_SERVER_URL:-${GITEA_SERVER_URL:-https://gitea.cyb3rhell.com}}"
-            CLONE_URL="$(printf '%s' "$SERVER_URL" | sed 's#://#://x-access-token:'"$GITEA_TOKEN"'@#')/$REPO_FULL.git"
+            SHA="${GITHUB_SHA:-}"
+            if [ -z "$SHA" ]; then
+              echo "GITHUB_SHA is empty, cannot build archive URL."
+              exit 1
+            fi
+            ARCHIVE_URL="$SERVER_URL/api/v1/repos/$REPO_FULL/archive/$SHA.tar.gz"
+            echo "Downloading archive: $ARCHIVE_URL"
+
             SOURCE_DIR="$PWD/repo-src"
             rm -rf "$SOURCE_DIR"
-            git clone --depth 1 "$CLONE_URL" "$SOURCE_DIR"
+            mkdir -p "$SOURCE_DIR"
+            curl -fsSL -H "Authorization: token $GITEA_TOKEN" "$ARCHIVE_URL" \
+              | tar -xz -C "$SOURCE_DIR" --strip-components=1
           fi
 
           test -f "$SOURCE_DIR/docker-compose.yml"
@@ -56,9 +86,16 @@ jobs:
       - name: Ensure Docker + Compose availability
         run: |
           set -eu
+          echo "DOCKER_HOST=${DOCKER_HOST:-<unset>}"
+          echo "socket: $(ls -la /var/run/docker.sock 2>/dev/null || echo not found)"
 
           if ! command -v docker >/dev/null 2>&1; then
-            echo "Docker is not available on this runner."
+            echo "Docker CLI is not available on this runner."
+            exit 1
+          fi
+
+          if ! docker version; then
+            echo "Docker daemon is not reachable."
             exit 1
           fi
 
@@ -67,7 +104,6 @@ jobs:
             exit 1
           fi
 
-          docker version
           docker compose version
 
       - name: Build all compose services
@@ -76,3 +112,47 @@ jobs:
           SOURCE_DIR="$(cat .source-dir)"
           cd "$SOURCE_DIR"
           docker compose build
+
+      - name: Sanity check - code-server and Renode
+        run: |
+          set -eu
+          SOURCE_DIR="$(cat .source-dir)"
+          cd "$SOURCE_DIR"
+
+          cleanup() {
+            echo "--- cleanup ---"
+            docker compose down --remove-orphans || true
+          }
+          trap cleanup EXIT
+
+          # Start IDE in detached mode
+          docker compose up -d ide
+
+          # Poll nginx inside the IDE container (port 8080).
+          # The host-mapped port 8443 is unreachable from within the job container.
+          echo "Waiting for code-server (nginx:8080 inside challenge-ide)..."
+          CODE_SERVER_UP=false
+          for i in $(seq 1 30); do
+            if docker exec challenge-ide curl -sf http://localhost:8080 >/dev/null 2>&1; then
+              CODE_SERVER_UP=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$CODE_SERVER_UP" = "false" ]; then
+            echo "[FAIL] code-server did not respond after 60s"
+            docker compose logs ide
+            exit 1
+          fi
+          echo "[PASS] code-server is listening (nginx:8080 inside challenge-ide)"
+
+          # Verify Renode is installed and executable in the digital-twin image.
+          # We override the entrypoint to avoid volume bind-mounts (which resolve
+          # against the host filesystem, not the job container, when using the
+          # Docker socket — so firmware paths would be empty on the host).
+          echo "Checking Renode binary in digital-twin image..."
+          docker compose run --rm --no-deps \
+            --entrypoint /bin/bash \
+            digital-twin \
+            -c "renode --version && echo '[PASS] Renode is functional'"
