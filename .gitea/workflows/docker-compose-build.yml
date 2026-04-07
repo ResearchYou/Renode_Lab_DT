@@ -41,26 +41,36 @@ jobs:
           fi
 
           if [ -z "$SOURCE_DIR" ]; then
+            echo "--- debug env ---"
+            echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY:-}"
+            echo "GITEA_REPOSITORY=${GITEA_REPOSITORY:-}"
+            echo "GITHUB_SERVER_URL=${GITHUB_SERVER_URL:-}"
+            echo "GITEA_SERVER_URL=${GITEA_SERVER_URL:-}"
+            echo "GITHUB_REF_NAME=${GITHUB_REF_NAME:-}"
+            echo "GITEA_REF_NAME=${GITEA_REF_NAME:-}"
+            echo "GITHUB_SHA=${GITHUB_SHA:-}"
+            echo "GITEA_TOKEN set=$([ -n "${GITEA_TOKEN:-}" ] && echo yes || echo no)"
+            echo "-----------------"
+
             if [ -z "${GITEA_TOKEN:-}" ]; then
               echo "Source not found and GITEA_TOKEN is unavailable for fallback download."
               exit 1
             fi
+
             SERVER_URL="${GITHUB_SERVER_URL:-${GITEA_SERVER_URL:-https://gitea.cyb3rhell.com}}"
-            REF_BRANCH="${GITHUB_REF_NAME:-${GITEA_REF_NAME:-master}}"
-            ARCHIVE_URL="$SERVER_URL/$REPO_FULL/archive/$REF_BRANCH.tar.gz"
+            SHA="${GITHUB_SHA:-}"
+            if [ -z "$SHA" ]; then
+              echo "GITHUB_SHA is empty, cannot build archive URL."
+              exit 1
+            fi
+            ARCHIVE_URL="$SERVER_URL/api/v1/repos/$REPO_FULL/archive/$SHA.tar.gz"
+            echo "Downloading archive: $ARCHIVE_URL"
+
             SOURCE_DIR="$PWD/repo-src"
             rm -rf "$SOURCE_DIR"
             mkdir -p "$SOURCE_DIR"
-            if command -v curl >/dev/null 2>&1; then
-              curl -fsSL -H "Authorization: token $GITEA_TOKEN" "$ARCHIVE_URL" \
-                | tar -xz -C "$SOURCE_DIR" --strip-components=1
-            elif command -v wget >/dev/null 2>&1; then
-              wget -qO- --header="Authorization: token $GITEA_TOKEN" "$ARCHIVE_URL" \
-                | tar -xz -C "$SOURCE_DIR" --strip-components=1
-            else
-              echo "Source not found and neither curl nor wget is available for fallback download."
-              exit 1
-            fi
+            curl -fsSL -H "Authorization: token $GITEA_TOKEN" "$ARCHIVE_URL" \
+              | tar -xz -C "$SOURCE_DIR" --strip-components=1
           fi
 
           test -f "$SOURCE_DIR/docker-compose.yml"
