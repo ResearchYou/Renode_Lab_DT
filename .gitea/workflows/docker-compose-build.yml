@@ -128,11 +128,12 @@ jobs:
           # Start IDE in detached mode
           docker compose up -d ide
 
-          # Poll until nginx/code-server responds on the exposed port
-          echo "Waiting for code-server on :8443..."
+          # Poll nginx inside the IDE container (port 8080).
+          # The host-mapped port 8443 is unreachable from within the job container.
+          echo "Waiting for code-server (nginx:8080 inside challenge-ide)..."
           CODE_SERVER_UP=false
           for i in $(seq 1 30); do
-            if curl -sf http://localhost:8443 >/dev/null 2>&1; then
+            if docker exec challenge-ide curl -sf http://localhost:8080 >/dev/null 2>&1; then
               CODE_SERVER_UP=true
               break
             fi
@@ -140,11 +141,11 @@ jobs:
           done
 
           if [ "$CODE_SERVER_UP" = "false" ]; then
-            echo "[FAIL] code-server did not respond on :8443 after 60s"
+            echo "[FAIL] code-server did not respond after 60s"
             docker compose logs ide
             exit 1
           fi
-          echo "[PASS] code-server is listening on :8443"
+          echo "[PASS] code-server is listening (nginx:8080 inside challenge-ide)"
 
           # Run digital-twin one-shot: builds firmware and runs Renode test
           echo "Running Renode digital-twin test..."
