@@ -1,0 +1,58 @@
+# Renode scenario: dual RP2040 — I2C humidity polling + LoRaWAN broadcast
+#
+# Two machines run concurrently:
+#
+#   master  — polls node at I2C address 0x08 every 3 s, logs to master_uart.txt
+#             node_i2c_bridge.py on master's I2C0 simulates the node slave
+#
+#   node    — reads HDC1080 humidity sensor (I2C0) every 2 s, broadcasts via
+#             SX1276 LoRa (SPI0), logs to node_uart.txt
+#             hdc1080.py and sx1276.py are registered on node's buses
+#
+# Note: initialize_raspberry_pico.resc creates a machine internally via
+# 'mach create'. Calling it twice creates two separate machines in sequence.
+
+path add @/opt/renode-rp2040
+
+# ── Machine: master ───────────────────────────────────────────────────────────
+include @boards/initialize_raspberry_pico.resc
+
+sysbus LoadELF @/workspace/build/master/master.elf
+sysbus.cpu0 VectorTableOffset 0x00000000
+sysbus.cpu1 VectorTableOffset 0x00000000
+sysbus.uart0 CreateFileBackend @/workspace/output/master_uart.txt true
+
+# Register node I2C bridge on master's I2C0 at slave address 0x08
+machine LoadPlatformDescriptionFromString """
+node_bridge: Python.PythonPeripheral @ i2c0 0x08
+    filename: "/workspace/renode/peripherals/node_i2c_bridge.py"
+"""
+
+# ── Machine: node ─────────────────────────────────────────────────────────────
+include @boards/initialize_raspberry_pico.resc
+
+sysbus LoadELF @/workspace/build/node/node.elf
+sysbus.cpu0 VectorTableOffset 0x00000000
+sysbus.cpu1 VectorTableOffset 0x00000000
+sysbus.uart0 CreateFileBackend @/workspace/output/node_uart.txt true
+
+# Register HDC1080 humidity sensor on node's I2C0 at address 0x40
+machine LoadPlatformDescriptionFromString """
+hdc1080: Python.PythonPeripheral @ i2c0 0x40
+    filename: "/workspace/renode/peripherals/hdc1080.py"
+"""
+
+# Register SX1276 LoRa transceiver on node's SPI0
+machine LoadPlatformDescriptionFromString """
+sx1276: Python.PythonPeripheral @ spi0
+    filename: "/workspace/renode/peripherals/sx1276.py"
+"""
+
+# Global log for peripheral access traces
+logFile @/workspace/output/renode.log true
+
+# Run both machines concurrently for 30 virtual seconds
+emulation RunFor "00:00:30"
+
+echo "Scenario complete"
+quit

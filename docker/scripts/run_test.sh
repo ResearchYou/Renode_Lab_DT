@@ -2,47 +2,50 @@
 set -e
 
 OUTPUT_DIR=/workspace/output
-UART_FILE="$OUTPUT_DIR/uart_output.txt"
-RESC_FILE=/workspace/renode/run_test.resc
+RESC_FILE=/workspace/renode/run_scenario.resc
+MASTER_UART="$OUTPUT_DIR/master_uart.txt"
+NODE_UART="$OUTPUT_DIR/node_uart.txt"
 
 mkdir -p "$OUTPUT_DIR"
-rm -f "$UART_FILE"
+rm -f "$MASTER_UART" "$NODE_UART"
 
-echo "=== Running RP2040 firmware in Renode ==="
+echo "=== Running dual-RP2040 scenario in Renode ==="
 
 renode --disable-xwt --console "$RESC_FILE" || true
 
 echo ""
-echo "=== UART Output ==="
-if [ ! -f "$UART_FILE" ]; then
-    echo "[ERROR] No UART output file found"
+echo "=== Node UART ==="
+if [ ! -f "$NODE_UART" ]; then
+    echo "[ERROR] Node UART output not found"
     exit 1
 fi
+cat "$NODE_UART"
 
-cat "$UART_FILE"
 echo ""
+echo "=== Master UART ==="
+if [ ! -f "$MASTER_UART" ]; then
+    echo "[ERROR] Master UART output not found"
+    exit 1
+fi
+cat "$MASTER_UART"
 
-# Basic validation (sets exit code)
+echo ""
+echo "=== Validation ==="
 PASS=true
 
-grep -q "BOOT: RP2040 Digital Twin POC"  "$UART_FILE" && echo "[PASS] Boot message"        || { echo "[FAIL] Boot message missing";        PASS=false; }
-grep -q "UART initialized successfully"  "$UART_FILE" && echo "[PASS] UART init"            || { echo "[FAIL] UART init missing";            PASS=false; }
-grep -q "LED ON  - cycle 0"              "$UART_FILE" && echo "[PASS] LED cycle output"      || { echo "[FAIL] LED cycle output missing";      PASS=false; }
-grep -q "TEST COMPLETE"                  "$UART_FILE" && echo "[PASS] Test complete"         || { echo "[FAIL] Test complete missing";         PASS=false; }
+# Node checks
+grep -q "\[NODE\] Boot:"         "$NODE_UART"  && echo "[PASS] Node boot"          || { echo "[FAIL] Node boot missing";          PASS=false; }
+grep -q "\[NODE\] HDC1080:"      "$NODE_UART"  && echo "[PASS] Node sensor read"   || { echo "[FAIL] Node sensor read missing";   PASS=false; }
+grep -q "\[NODE\] LoRa TX:"      "$NODE_UART"  && echo "[PASS] Node LoRa TX"       || { echo "[FAIL] Node LoRa TX missing";       PASS=false; }
 
-echo ""
-
-# Generate waveform PNG + HTML report
-if command -v python3 &>/dev/null; then
-    echo "=== Generating report ==="
-    python3 /workspace/scripts/generate_report.py "$OUTPUT_DIR" && \
-        echo "    → output/report.html" || \
-        echo "[WARN] Report generation failed (non-fatal)"
-fi
+# Master checks
+grep -q "\[MASTER\] Boot:"       "$MASTER_UART" && echo "[PASS] Master boot"       || { echo "[FAIL] Master boot missing";        PASS=false; }
+grep -q "\[MASTER\] Poll #"      "$MASTER_UART" && echo "[PASS] Master poll"       || { echo "[FAIL] Master poll missing";        PASS=false; }
+grep -q "humidity="              "$MASTER_UART" && echo "[PASS] Master humidity"   || { echo "[FAIL] Master humidity missing";    PASS=false; }
 
 echo ""
 if [ "$PASS" = true ]; then
-    echo ">>> ALL CHECKS PASSED - Digital twin behaves as expected <<<"
+    echo ">>> ALL CHECKS PASSED <<<"
     exit 0
 else
     echo ">>> SOME CHECKS FAILED <<<"
