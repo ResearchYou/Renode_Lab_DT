@@ -35,6 +35,13 @@ services:
     profiles:
       - metrics
 
+  socket-proxy:
+    image: alpine/socat
+    command: TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock
+    volumes:
+      - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock"
+    restart: unless-stopped
+
   ide:
     build:
       context: .
@@ -48,9 +55,11 @@ services:
     environment:
       - "HOST_PROJECT_DIR=${PWD}"
       - "RUNNER_SERVICE=digital-twin"
+      - "DOCKER_HOST=tcp://socket-proxy:2375"
+    depends_on:
+      - socket-proxy
     volumes:
       - ./firmware:/home/coder/challenge/firmware:z
       - ./ide/problem:/home/coder/challenge/problem:z
       - ./output:/home/coder/challenge/output:z
       - ./docker-compose.yml:/home/coder/docker-compose.yml:ro,z
-      - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock"
