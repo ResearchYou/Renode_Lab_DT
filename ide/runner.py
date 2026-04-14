@@ -2,85 +2,99 @@
 """
 Minimal SSE runner for the challenge IDE.
 
-POST /api/run   — stream test run output (text/event-stream)
-POST /api/stop  — kill the running process
+POST /api/run   — trigger a test run and stream output (text/event-stream)
+POST /api/stop  — abort the current run
 GET  /api/status — {"running": bool}
+
+The runner communicates with the digital-twin daemon via two files in the
+shared output volume — no Docker socket access needed:
+
+  .trigger   written by runner  → tells daemon to start a run
+  run.log    written by daemon  → runner streams this line-by-line until
+                                  a final "EXIT:<code>" line appears
 """
 
 import http.server
 import json
 import os
-import subprocess
 import threading
+import time
 
-COMPOSE_FILE = "/home/coder/docker-compose.yml"
-PROJECT_DIR = os.environ.get("HOST_PROJECT_DIR", "")
-RUNNER_SERVICE = os.environ.get("RUNNER_SERVICE", "digital-twin")
+OUTPUT_DIR   = "/home/coder/challenge/output"
+TRIGGER_FILE = os.path.join(OUTPUT_DIR, ".trigger")
+LOG_FILE     = os.path.join(OUTPUT_DIR, "run.log")
+RUN_TIMEOUT  = 300   # seconds before the runner gives up
 
-_lock = threading.Lock()
-_current = None  # active Popen
+_lock    = threading.Lock()
+_running = [False]
+_stop    = [False]
 
 
 # ── Runner ────────────────────────────────────────────────────────
 
 
 def run_test(emit):
-    global _current
-
-    if not PROJECT_DIR:
-        emit("error", "[ERROR] HOST_PROJECT_DIR is not set — cannot locate project")
-        emit("done", "1")
-        return
+    with _lock:
+        if _running[0]:
+            emit("error", "[ERROR] already running")
+            emit("done", "1")
+            return
+        _running[0] = True
+        _stop[0] = False
 
     try:
-        os.makedirs(PROJECT_DIR, exist_ok=True)
-        os.makedirs(os.path.join(PROJECT_DIR, "docker"), exist_ok=True)
-        with open(os.path.join(PROJECT_DIR, "docker", "Dockerfile"), "a"):
-            pass
-        with open(os.path.join(PROJECT_DIR, "docker", "Dockerfile.ide"), "a"):
-            pass
-    except Exception as exc:
-        emit("error", f"[ERROR] failed to create HOST_PROJECT_DIR: {exc}")
+        _do_run(emit)
+    finally:
+        with _lock:
+            _running[0] = False
+
+
+def _do_run(emit):
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    # Truncate log so stale content is never read
+    try:
+        open(LOG_FILE, "w").close()
+    except OSError as exc:
+        emit("error", f"[ERROR] cannot clear log: {exc}")
         emit("done", "1")
         return
 
-    cmd = [
-        "docker-compose",
-        "-f",
-        COMPOSE_FILE,
-        "--project-directory",
-        PROJECT_DIR,
-        "run",
-        "--rm",
-        RUNNER_SERVICE,
-    ]
-    emit("info", "$ " + " ".join(cmd))
+    # Write trigger — daemon picks this up and starts the test
+    try:
+        open(TRIGGER_FILE, "w").close()
+    except OSError as exc:
+        emit("error", f"[ERROR] cannot write trigger: {exc}")
+        emit("done", "1")
+        return
+
+    emit("info", "$ [digital-twin] run triggered")
+
+    # Stream log file until EXIT:<code> marker or timeout
+    deadline = time.monotonic() + RUN_TIMEOUT
+    rc = 1
 
     try:
-        proc = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1,
-        )
-    except Exception as exc:
-        emit("error", f"[ERROR] failed to start: {exc}")
-        emit("done", "1")
-        return
+        with open(LOG_FILE, "r") as fh:
+            while time.monotonic() < deadline:
+                if _stop[0]:
+                    emit("error", "[STOPPED]")
+                    return
 
-    with _lock:
-        _current = proc
+                line = fh.readline()
+                if line:
+                    if line.startswith("EXIT:"):
+                        rc = int(line[5:].strip())
+                        break
+                    emit("line", line.rstrip("\n"))
+                else:
+                    time.sleep(0.1)
+            else:
+                emit("error", "[ERROR] run timed out")
+    except OSError as exc:
+        emit("error", f"[ERROR] cannot read log: {exc}")
 
-    for line in proc.stdout:
-        emit("line", line.rstrip("\n"))
-
-    proc.wait()
-
-    with _lock:
-        _current = None
-
-    emit("done", str(proc.returncode))
+    emit("done", str(rc))
 
 
 # ── HTTP handler ──────────────────────────────────────────────────
@@ -90,7 +104,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, *_):
         pass
 
-    # ── CORS pre-flight ──
     def do_OPTIONS(self):
         self.send_response(204)
         self._cors()
@@ -99,7 +112,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/api/status":
             with _lock:
-                running = _current is not None
+                running = _running[0]
             self._json({"running": running})
         else:
             self.send_response(404)
@@ -114,17 +127,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
-    # ── /api/run — SSE stream ──
     def _handle_run(self):
         with _lock:
-            if _current is not None:
+            if _running[0]:
                 self._json({"error": "already running"}, status=409)
                 return
 
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
         self.send_header("Cache-Control", "no-cache")
-        self.send_header("X-Accel-Buffering", "no")  # tell nginx not to buffer SSE
+        self.send_header("X-Accel-Buffering", "no")
         self._cors()
         self.end_headers()
 
@@ -137,19 +149,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         run_test(emit)
 
-    # ── /api/stop ──
     def _handle_stop(self):
-        global _current
         with _lock:
-            proc = _current
-        if proc:
-            proc.terminate()
+            running = _running[0]
+        if running:
+            _stop[0] = True
+            try:
+                os.remove(TRIGGER_FILE)
+            except FileNotFoundError:
+                pass
             msg = "stopped"
         else:
             msg = "not running"
         self._json({"status": msg})
 
-    # ── helpers ──
     def _cors(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -165,9 +178,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(
-        f"[runner] service={RUNNER_SERVICE!r}  project={PROJECT_DIR!r}",
-        flush=True,
-    )
+    print("[runner] started — waiting for /api/run requests", flush=True)
     server = http.server.HTTPServer(("127.0.0.1", 3001), Handler)
     server.serve_forever()

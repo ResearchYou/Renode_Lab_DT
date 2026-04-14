@@ -10,11 +10,12 @@ services:
     container_name: rp2040-digital-twin
     security_opt:
       - label:disable
+    restart: unless-stopped
     volumes:
       - ./firmware:/workspace/firmware:ro,z
       - ./renode:/workspace/renode:ro,z
       - ./output:/workspace/output:z
-    entrypoint: ["/bin/bash", "/workspace/scripts/entrypoint.sh"]
+    entrypoint: ["/bin/bash", "/workspace/scripts/run_daemon.sh"]
 
   digital-twin-metrics:
     build:
@@ -35,13 +36,6 @@ services:
     profiles:
       - metrics
 
-  socket-proxy:
-    image: alpine/socat
-    command: TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock
-    volumes:
-      - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock"
-    restart: unless-stopped
-
   ide:
     build:
       context: .
@@ -52,14 +46,11 @@ services:
       - label:disable
     ports:
       - "8443:8080"
+    depends_on:
+      - digital-twin
     environment:
       - "HOST_PROJECT_DIR=${PWD}"
-      - "RUNNER_SERVICE=digital-twin"
-      - "DOCKER_HOST=tcp://socket-proxy:2375"
-    depends_on:
-      - socket-proxy
     volumes:
       - ./firmware:/home/coder/challenge/firmware:z
       - ./ide/problem:/home/coder/challenge/problem:z
       - ./output:/home/coder/challenge/output:z
-      - ./docker-compose.yml:/home/coder/docker-compose.yml:ro,z
