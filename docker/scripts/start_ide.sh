@@ -8,10 +8,7 @@ WORKSPACE_FILE="/home/coder/.config/code-server/challenge.code-workspace"
 mkdir -p "${CHALLENGE_ROOT}/firmware" \
          "${CHALLENGE_ROOT}/problem" \
          "$(dirname "${WORKSPACE_FILE}")"
-chown coder:coder "${CHALLENGE_ROOT}" \
-                  "${CHALLENGE_ROOT}/firmware" \
-                  "${CHALLENGE_ROOT}/problem" \
-                  "$(dirname "${WORKSPACE_FILE}")"
+chown -R coder:coder /home/coder
 
 # Write workspace file
 cat > "${WORKSPACE_FILE}" <<'JSON'
@@ -29,7 +26,6 @@ cat > "${WORKSPACE_FILE}" <<'JSON'
   }
 }
 JSON
-chown coder:coder "${WORKSPACE_FILE}"
 
 # Start runner (as root — needs access to the Docker socket)
 python3 /usr/local/bin/runner.py &
