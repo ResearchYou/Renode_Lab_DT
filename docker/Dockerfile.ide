@@ -14,10 +14,7 @@ RUN apt-get update \
         git \
         ca-certificates \
         nginx \
-        docker.io \
         curl \
-    && curl -SL "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/docker-compose \
     && rm -rf /var/lib/apt/lists/*
 
 USER coder
@@ -36,6 +33,6 @@ RUN chmod +x /usr/local/bin/start_ide.sh /usr/local/bin/runner.py
 COPY --chown=coder:coder ide/panel/      /home/coder/panel/
 COPY --chown=coder:coder ide/nginx.conf  /home/coder/nginx.conf
 
-# Entrypoint runs as root so the runner can reach the Docker socket;
+# Entrypoint runs as root so nginx can bind port 8080;
 # code-server is exec'd as coder inside the script.
 ENTRYPOINT ["/usr/local/bin/start_ide.sh"]

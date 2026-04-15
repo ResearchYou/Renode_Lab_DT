@@ -48,8 +48,6 @@ services:
       - "8443:8080"
     depends_on:
       - digital-twin
-    environment:
-      - "HOST_PROJECT_DIR=${PWD}"
     volumes:
       - ./firmware:/home/coder/challenge/firmware:z
       - ./ide/problem:/home/coder/challenge/problem:z

@@ -13,4 +13,14 @@ echo ""
 echo ""
 
 # Step 2: Run in Renode and validate
-/workspace/scripts/run_test.sh
+TEST_RC=0
+/workspace/scripts/run_test.sh || TEST_RC=$?
+
+echo ""
+
+# Step 3: Generate HTML report (always, even if tests fail)
+echo "=== Generating report ==="
+python3 /workspace/scripts/generate_report.py /workspace/output || true
+
+# Propagate original test exit code
+exit $TEST_RC
