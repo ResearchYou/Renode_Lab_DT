@@ -1,10 +1,13 @@
 <script setup lang="ts">
-defineProps<{ rawUart: string }>()
+defineProps<{
+  title: string
+  rawUart: string
+}>()
 </script>
 
 <template>
   <div class="card">
-    <h2>Raw UART Output</h2>
-    <pre>{{ rawUart }}</pre>
+    <h2>{{ title }}</h2>
+    <pre>{{ rawUart || "(no output)" }}</pre>
   </div>
 </template>

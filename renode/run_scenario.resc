@@ -1,0 +1,98 @@
+# Renode scenario: dual RP2040 - I2C humidity polling + LoRaWAN broadcast
+#
+# Two machines run concurrently:
+#
+#   master  - polls node at I2C address 0x08 every 3 s, logs to master_uart.txt
+#             NodeI2CBridge on master's I2C0 simulates the node slave
+#
+#   node    - reads HDC1080 humidity sensor (I2C0) every 2 s, broadcasts via
+#             SX1276 LoRa (SPI0), logs to node_uart.txt
+#             HDC1080Device and SX1276Device are registered on node's buses
+#
+# Both machines use a PIO-free platform description to avoid native PIO
+# simulator crashes in dual-machine setups.
+
+path add @/opt/renode-rp2040
+
+# Compile RP2040 C# peripherals (skip PIO to avoid native piosim crash).
+include @emulation/externals/w25q16.cs
+include @emulation/peripherals/memory/memory_alias.cs
+include @emulation/peripherals/rp2040_peripheral_base.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.RP2040PeripheralBase"
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.IRP2040Peripheral"
+include @emulation/peripherals/clocks/rp2040_xosc.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.Miscellaneous.RP2040XOSC"
+include @emulation/peripherals/clocks/rp2040_rosc.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.Miscellaneous.RP2040ROSC"
+include @emulation/peripherals/clocks/rp2040_pll.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.Miscellaneous.RP2040PLL"
+include @emulation/peripherals/power/power.cs
+include @emulation/peripherals/gpio/rp2040_gpio.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.GPIOPort.RP2040GPIO"
+include @emulation/peripherals/clocks/rp2040_clocks.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.Miscellaneous.RP2040Clocks"
+include @emulation/peripherals/timer/rp2040_timer.cs
+include @emulation/peripherals/gpio/rp2040_pads.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.GPIOPort.RP2040Pads"
+include @emulation/peripherals/gpio/rp2040_qspi_pads.cs
+include @emulation/peripherals/spi/rp2040_spi.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.SPI.PL022"
+include @emulation/peripherals/spi/rp2040_xip_ssi.cs
+include @emulation/peripherals/sio/rp2040_sio.cs
+include @emulation/peripherals/adc/rp2040_adc.cs
+include @emulation/peripherals/uart/rp2040_uart.cs
+include @emulation/peripherals/dma/rpdma_engine.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.DMA.RPDmaEngine"
+include @emulation/peripherals/dma/rpdma.cs
+include @emulation/peripherals/watchdog/rp2040_watchdog.cs
+include @emulation/peripherals/i2c/rp2040_i2c.cs
+include @emulation/peripherals/psm/rp2040_psm.cs
+
+# Load custom C# peripherals.
+include @/workspace/renode/peripherals/NodeI2CBridge.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.I2C.NodeI2CBridge"
+include @/workspace/renode/peripherals/HDC1080Device.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.I2C.HDC1080Device"
+include @/workspace/renode/peripherals/SX1276Device.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.SPI.SX1276Device"
+
+# Machine: node. Created first to let it boot without contention.
+mach create "node"
+machine LoadPlatformDescription @/workspace/renode/node_pico.repl
+sysbus LoadELF @/opt/renode-rp2040/bootroms/rp2040/b2.elf
+
+sysbus LoadELF @/workspace/build/node/node.elf
+sysbus.cpu0 VectorTableOffset 0x00000000
+sysbus.cpu1 VectorTableOffset 0x00000000
+sysbus.uart0 CreateFileBackend @/workspace/output/node_uart.txt true
+
+# Register HDC1080 humidity sensor on node's I2C0 at address 0x40.
+machine LoadPlatformDescriptionFromString "hdc1080: I2C.HDC1080Device @ i2c0 0x40"
+
+# Register SX1276 LoRa transceiver on node's SPI0.
+machine LoadPlatformDescriptionFromString "sx1276: SPI.SX1276Device @ spi0"
+
+# Let the node boot alone for 3 virtual seconds.
+emulation RunFor "00:00:03"
+
+# Machine: master. Added after node has booted.
+mach create "master"
+machine LoadPlatformDescription @/workspace/renode/node_pico.repl
+sysbus LoadELF @/opt/renode-rp2040/bootroms/rp2040/b2.elf
+
+sysbus LoadELF @/workspace/build/master/master.elf
+sysbus.cpu0 VectorTableOffset 0x00000000
+sysbus.cpu1 VectorTableOffset 0x00000000
+sysbus.uart0 CreateFileBackend @/workspace/output/master_uart.txt true
+
+# Register node I2C bridge on master's I2C0 at slave address 0x08.
+machine LoadPlatformDescriptionFromString "node_bridge: I2C.NodeI2CBridge @ i2c0 0x08"
+
+# Global log for peripheral access traces.
+logFile @/workspace/output/renode.log true
+
+# Run both machines together for 30 more virtual seconds.
+emulation RunFor "00:00:30"
+
+echo "Scenario complete"
+quit

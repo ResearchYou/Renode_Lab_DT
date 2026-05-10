@@ -11,11 +11,14 @@ Features:
 ## Start
 
 ```bash
-docker-compose up --build ide
+./run.sh up --build ide
 ```
 
 Open `http://localhost:8443` — the wrapper page loads the editor on the left and
 the spec/results panel on the right. Use the **Hide Panel** button to toggle it.
+
+Use `run.sh` instead of calling Docker Compose directly when possible; it detects
+rootless Docker socket locations and exports `DOCKER_SOCKET_PATH` for the IDE.
 
 ## Mounted directories
 
