@@ -18,7 +18,12 @@ import matplotlib.pyplot as plt
 
 def parse_node_uart(filepath):
     events = []
-    checks = {"node_boot": False, "node_sensor": False, "node_lora": False}
+    checks = {
+        "node_boot": False,
+        "node_sensor": False,
+        "node_temperature": False,
+        "node_lora": False,
+    }
     if not os.path.exists(filepath):
         return events, checks, ""
 
@@ -35,6 +40,8 @@ def parse_node_uart(filepath):
         if "[NODE] HDC1080:" in line:
             checks["node_sensor"] = True
             events.append({"type": "sensor", "machine": "node", "message": line})
+            if "temp=" in line:
+                checks["node_temperature"] = True
         if "[NODE] LoRa TX:" in line:
             checks["node_lora"] = True
             events.append({"type": "lora_tx", "machine": "node", "message": line})
@@ -48,6 +55,7 @@ def parse_master_uart(filepath):
         "master_boot": False,
         "master_poll": False,
         "master_humidity": False,
+        "master_temperature": False,
     }
     humidity_readings = []
 
@@ -75,6 +83,9 @@ def parse_master_uart(filepath):
                 humidity_readings.append(
                     {"poll": poll_num, "humidity": float(hum_match.group(1))}
                 )
+            temp_match = re.search(r"temp=([\-]?\d+(?:\.\d+)?)", line)
+            if temp_match:
+                checks["master_temperature"] = True
         if "humidity=" in line and "[MASTER]" in line:
             checks["master_humidity"] = True
 
@@ -141,12 +152,20 @@ def build_report_data(
     check_list = [
         {"name": "Node boot message", "passed": node_checks["node_boot"]},
         {"name": "Node HDC1080 sensor read", "passed": node_checks["node_sensor"]},
+        {
+            "name": "Node temperature sensor read",
+            "passed": node_checks["node_temperature"],
+        },
         {"name": "Node LoRa TX", "passed": node_checks["node_lora"]},
         {"name": "Master boot message", "passed": master_checks["master_boot"]},
         {"name": "Master poll cycle", "passed": master_checks["master_poll"]},
         {
             "name": "Master humidity reading",
             "passed": master_checks["master_humidity"],
+        },
+        {
+            "name": "Master temperature reading",
+            "passed": master_checks["master_temperature"],
         },
     ]
     return {

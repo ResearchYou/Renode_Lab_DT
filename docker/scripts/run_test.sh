@@ -36,12 +36,14 @@ PASS=true
 # Node checks
 grep -q "\[NODE\] Boot:"         "$NODE_UART"  && echo "[PASS] Node boot"        || { echo "[FAIL] Node boot missing";        PASS=false; }
 grep -q "\[NODE\] HDC1080:"      "$NODE_UART"  && echo "[PASS] Node sensor read" || { echo "[FAIL] Node sensor read missing"; PASS=false; }
+grep -q "temp="                  "$NODE_UART"  && echo "[PASS] Node temperature read" || { echo "[FAIL] Node temperature missing"; PASS=false; }
 grep -q "\[NODE\] LoRa TX:"      "$NODE_UART"  && echo "[PASS] Node LoRa TX"     || { echo "[FAIL] Node LoRa TX missing";     PASS=false; }
 
 # Master checks
 grep -q "\[MASTER\] Boot:"       "$MASTER_UART" && echo "[PASS] Master boot"     || { echo "[FAIL] Master boot missing";      PASS=false; }
 grep -q "\[MASTER\] Poll #"      "$MASTER_UART" && echo "[PASS] Master poll"     || { echo "[FAIL] Master poll missing";      PASS=false; }
 grep -q "humidity="              "$MASTER_UART" && echo "[PASS] Master humidity" || { echo "[FAIL] Master humidity missing";  PASS=false; }
+grep -q "temp="                  "$MASTER_UART" && echo "[PASS] Master temperature" || { echo "[FAIL] Master temperature missing"; PASS=false; }
 
 echo ""
 if [ "$PASS" = true ]; then

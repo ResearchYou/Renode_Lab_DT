@@ -1,4 +1,4 @@
-# Renode scenario: dual RP2040 - I2C humidity polling + LoRaWAN broadcast
+# Renode scenario: dual RP2040 - I2C humidity+temperature polling + LoRaWAN payload
 #
 # Two machines run concurrently:
 #
@@ -8,6 +8,7 @@
 #   node    - reads HDC1080 humidity sensor (I2C0) every 2 s, broadcasts via
 #             SX1276 LoRa (SPI0), logs to node_uart.txt
 #             HDC1080Device and SX1276Device are registered on node's buses
+#             Node polls and serves both humidity and temperature registers.
 #
 # Both machines use a PIO-free platform description to avoid native PIO
 # simulator crashes in dual-machine setups.

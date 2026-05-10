@@ -8,9 +8,9 @@
  *
  * Behaviour:
  *   Every SAMPLE_INTERVAL_MS:
- *     1. Read humidity from HDC1080 over I2C0
- *     2. Broadcast reading over LoRa (SX1276 SPI)
- *     3. Update internal register so I2C1 slave can serve master polls
+ *     1. Read humidity and temperature from HDC1080 over I2C0
+ *     2. Broadcast both readings over LoRa (SX1276 SPI)
+ *     3. Update internal registers so I2C1 slave can serve master polls
  */
 
 #include "hardware/i2c.h"
@@ -42,11 +42,15 @@
 /* ── I2C1 slave ───────────────────────────────────────────────── */
 #define NODE_SLAVE_ADDR 0x08
 #define NODE_REG_HUMIDITY 0x01
+#define NODE_REG_TEMPERATURE 0x02
+
+#define LORA_PAYLOAD_TYPE_HUM_TEMP 'A'
 
 #define SAMPLE_INTERVAL_MS 2000
 
-    /* Humidity in units of 0.01% (e.g. 6050 = 60.50%) shared with I2C slave */
-    static volatile uint16_t g_humidity_x100 = 0;
+/* Shared values in units of 0.01 (humidity %RH, temperature C). */
+static volatile uint16_t g_humidity_x100 = 0;
+static volatile uint16_t g_temperature_x100 = 0;
 
 /* ── HDC1080 ──────────────────────────────────────────────────── */
 static float hdc1080_read_humidity(void) {
@@ -59,6 +63,18 @@ static float hdc1080_read_humidity(void) {
 
   uint16_t val = (uint16_t)((raw[0] << 8) | raw[1]);
   return (val / 65536.0f) * 100.0f;
+}
+
+static float hdc1080_read_temperature(void) {
+  uint8_t reg = HDC1080_REG_TEMP;
+  uint8_t raw[2] = {0};
+
+  i2c_write_blocking(i2c0, HDC1080_ADDR, &reg, 1, false);
+  sleep_ms(15); /* 14-bit conversion ~14.85 ms */
+  i2c_read_blocking(i2c0, HDC1080_ADDR, raw, 2, false);
+
+  uint16_t val = (uint16_t)((raw[0] << 8) | raw[1]);
+  return ((val / 65536.0f) * 165.0f) - 40.0f;
 }
 
 /* ── SX1276 ───────────────────────────────────────────────────── */
@@ -79,13 +95,20 @@ static uint8_t lora_read_reg(uint8_t reg) {
 }
 
 /*
- * Minimal LoRa frame: 1 byte type ('H') + 2 bytes humidity_x100 big-endian
- * In a real deployment this would carry a proper LoRaWAN MAC frame.
+ * Minimal LoRa frame: 1 byte type + humidity_x100 + temperature_x100
+ * in big-endian order. In a real deployment this would carry a proper
+ * LoRaWAN MAC frame.
  */
-static void lora_transmit(float humidity) {
+static void lora_transmit(float humidity, float temperature) {
   uint16_t hum_x100 = (uint16_t)(humidity * 100.0f);
-  uint8_t payload[3] = {'H', (uint8_t)(hum_x100 >> 8),
-                        (uint8_t)(hum_x100 & 0xFF)};
+  uint16_t temp_x100 = (uint16_t)(temperature * 100.0f);
+  uint8_t payload[5] = {
+      LORA_PAYLOAD_TYPE_HUM_TEMP,
+      (uint8_t)(hum_x100 >> 8),
+      (uint8_t)(hum_x100 & 0xFFu),
+      (uint8_t)(temp_x100 >> 8),
+      (uint8_t)(temp_x100 & 0xFFu),
+  };
 
   lora_write_reg(SX1276_REG_OPMODE, SX1276_LORA_STANDBY);
   sleep_ms(10);
@@ -100,14 +123,17 @@ static void lora_transmit(float humidity) {
   lora_write_reg(SX1276_REG_PAYLEN, sizeof(payload));
   lora_write_reg(SX1276_REG_OPMODE, SX1276_LORA_TX);
 
-  printf("[NODE] LoRa TX: humidity=%.1f%%\n", humidity);
+  printf("[NODE] LoRa TX: type=%c hum=%.1f%% temp=%.2fC\n",
+         LORA_PAYLOAD_TYPE_HUM_TEMP, humidity, temperature);
 }
 
 /* ── I2C1 slave ───────────────────────────────────────────────── */
 /*
  * Minimal polling I2C slave using raw RP2040 I2C hardware registers.
- * Protocol: master writes register address byte (0x01 for humidity),
- *           then reads 2 bytes back (uint16 big-endian, humidity * 100).
+ * Protocol: master writes register address byte:
+ *   0x01 humidity (%RH * 100)
+ *   0x02 temperature (°C * 100)
+ * then reads 2 bytes back (uint16 big-endian).
  */
 static void i2c1_slave_init(void) {
   i2c_hw_t *hw = i2c1_hw;
@@ -126,8 +152,14 @@ static void i2c1_slave_poll(void) {
   /* RX data available — master sent a register address */
   if (hw->status & I2C_IC_STATUS_RFNE_BITS) {
     uint8_t reg = (uint8_t)(hw->data_cmd & 0xFFu);
+    uint16_t val = 0;
     if (reg == NODE_REG_HUMIDITY) {
-      uint16_t val = g_humidity_x100;
+      val = g_humidity_x100;
+    } else if (reg == NODE_REG_TEMPERATURE) {
+      val = g_temperature_x100;
+    }
+
+    if (reg == NODE_REG_HUMIDITY || reg == NODE_REG_TEMPERATURE) {
       /* Queue 2 bytes for master read */
       hw->data_cmd = (val >> 8) & 0xFFu;
       hw->data_cmd = val & 0xFFu;
@@ -177,9 +209,12 @@ int main(void) {
 
     if (now_ms - last_sample_ms >= SAMPLE_INTERVAL_MS) {
       float humidity = hdc1080_read_humidity();
+      float temperature = hdc1080_read_temperature();
       g_humidity_x100 = (uint16_t)(humidity * 100.0f);
-      printf("[NODE] HDC1080: %.1f%% humidity\n", humidity);
-      lora_transmit(humidity);
+      g_temperature_x100 = (uint16_t)(temperature * 100.0f);
+      printf("[NODE] HDC1080: humidity=%.1f%% temp=%.2fC\n", humidity,
+             temperature);
+      lora_transmit(humidity, temperature);
       last_sample_ms = now_ms;
     }
 

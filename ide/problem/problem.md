@@ -1,4 +1,4 @@
-# Challenge: I2C Humidity Node + LoRaWAN Broadcast
+# Challenge: I2C Humidity + Temperature Node + LoRa Payload
 
 ## Scenario
 
@@ -6,24 +6,26 @@ Two RP2040 microcontrollers communicate over I2C:
 
 ```
 [Node RP2040]                        [Master RP2040]
-  HDC1080 humidity sensor (I2C0)       polls Node every 3 s over I2C
-  SX1276 LoRa module (SPI0)            logs reading to UART
+  HDC1080 humidity/temperature sensor (I2C0)   polls Node every 3 s over I2C
+  SX1276 LoRa module (SPI0)                       logs reading to UART
   I2C1 slave — responds to master
 ```
 
-The **node** samples humidity from an HDC1080 sensor, broadcasts each reading
-over LoRaWAN (SX1276), and exposes the latest value to the master via I2C slave.
+The **node** samples humidity and temperature from an HDC1080 sensor, broadcasts
+each sample set over LoRaWAN (SX1276), and exposes both values to the master via
+its I2C slave registers.
 
-The **master** polls the node every 3 seconds and logs the received humidity.
+The **master** polls the node every 3 seconds and logs the latest humidity and
+temperature from its dedicated registers.
 
 ## Your task
 
 Both firmwares are complete and runnable. Extend or modify them:
 
-- **Node** (`firmware/node/main.c`): adjust the LoRa frame format, sampling
-  rate, or add temperature to the payload.
-- **Master** (`firmware/master/main.c`): parse multi-value frames, add
-  threshold alerting, or request temperature as well.
+- **Node** (`firmware/node/main.c`): adjust the LoRa frame format, sampling rate,
+  and the humidity/temperature telemetry layout.
+- **Master** (`firmware/master/main.c`): parse multi-register telemetry and use
+  both humidity and temperature in local decisions.
 
 ## Hardware mapping
 
@@ -42,13 +44,13 @@ Both firmwares are complete and runnable. Extend or modify them:
 
 In the Renode simulation:
 
-- `renode/peripherals/hdc1080.py` — I2C peripheral that returns oscillating
-  humidity values (40–80%) on the node's I2C0 bus.
-- `renode/peripherals/sx1276.py` — SPI peripheral that logs LoRa TX events to
+- `renode/peripherals/HDC1080Device.cs` — I2C peripheral that returns oscillating
+  humidity and temperature values on the node's I2C0 bus.
+- `renode/peripherals/SX1276Device.cs` — SPI peripheral that logs LoRa TX events to
   the Renode log when TX mode is triggered.
-- `renode/peripherals/node_i2c_bridge.py` — I2C peripheral on the master's
-  I2C0 bus that simulates the node's slave response (returns the same humidity
-  curve as the HDC1080 model).
+- `renode/peripherals/NodeI2CBridge.cs` — I2C peripheral on the master's I2C0 bus
+  that simulates the node's slave response:
+  register 0x01 for humidity, register 0x02 for temperature.
 
 True inter-machine I2C wiring is not modelled; each machine's peripherals are
 simulated independently. On real hardware the node's I2C1 slave and the
@@ -61,4 +63,4 @@ docker compose up digital-twin
 ```
 
 Pass condition: both UARTs show boot messages, node logs sensor reads and LoRa
-TX events, master logs humidity poll results.
+TX events, master logs humidity and temperature poll results.
