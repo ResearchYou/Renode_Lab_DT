@@ -1,29 +1,24 @@
-# Renode script for RP2040 Digital Twin POC
-# Uses community RP2040 support (matgla/Renode_RP2040)
+# Renode scenario: STM32F4 YubiKey-like challenge-response token
+#
+# A single STM32F4 Discovery board runs token firmware. A custom memory-mapped
+# MockUSBHIDHost peripheral at 0x50000000 drives fixed 64-byte HID-like reports.
 
-path add @/opt/renode-rp2040
+include @/workspace/renode/peripherals/MockUSBHIDHost.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.Miscellaneous.MockUSBHIDHost"
 
-# Initialize the Raspberry Pi Pico board (loads platform + boot ROM)
-include @boards/initialize_raspberry_pico.resc
-
-# Load the compiled firmware
-sysbus LoadELF @/workspace/build/firmware.elf
-
-# Set vector table offset (boot ROM handles jump to firmware)
-sysbus.cpu0 VectorTableOffset 0x00000000
-sysbus.cpu1 VectorTableOffset 0x00000000
-
-# Capture UART output to file (with immediate flush)
-sysbus.uart0 CreateFileBackend @/workspace/output/uart_output.txt true
-
-# Enable Renode log file — captures peripheral access traces
 logFile @/workspace/output/renode.log true
 
-# Log all register-level reads/writes to the SIO peripheral (GPIO control)
-sysbus LogPeripheralAccess sysbus.sio
+mach create "token"
+machine LoadPlatformDescription @platforms/boards/stm32f4_discovery-kit.repl
 
-# Run for 15 virtual seconds then stop
-emulation RunFor "00:00:15"
+machine LoadPlatformDescriptionFromString "mockUsb: Miscellaneous.MockUSBHIDHost @ sysbus 0x50000000"
 
-echo "Emulation finished"
+sysbus LoadELF @/workspace/build/token.elf
+sysbus.usart1 CreateFileBackend @/workspace/output/token_uart.txt true
+
+logLevel -1 sysbus.mockUsb
+
+echo "Starting STM32F4 mock HID security-token scenario..."
+emulation RunFor "00:00:03"
+echo "Scenario complete"
 quit

@@ -7,7 +7,7 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
-    container_name: rp2040-digital-twin
+    container_name: stm32f4-mock-hid-token
     security_opt:
       - label:disable
     volumes:

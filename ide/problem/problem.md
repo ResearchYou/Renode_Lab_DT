@@ -1,21 +1,42 @@
-# RP2040 Hello World Challenge
+# Challenge: Mock HID Security Token Replay Bug
 
-Implement and iterate firmware in `firmware/main.c`.
+## Scenario
 
-## Goal
-- Boot the RP2040 firmware in Renode.
-- Print a clear hello-world boot message and basic LED cycle logs over UART.
-- Produce a passing HTML report in `output/report.html`.
+An STM32F4 Discovery board emulates a small YubiKey-like security token. Renode
+provides a mock USB HID host peripheral, so the firmware sees fixed 64-byte
+reports without requiring real USB enumeration.
 
-## Files
-- Firmware code: `firmware/main.c`
-- Harness output: `output/*.txt`
+```
+[Mock HID Host]  ->  64-byte request reports  ->  [STM32F4 token]
+[Mock HID Host]  <-  64-byte response reports <-  [STM32F4 token]
+```
 
-## Workflow
-1. Edit code in the left editor pane.
-2. The results panel on the right updates when you refresh it after a test run.
-3. Run tests:
-   - `docker-compose up digital-twin` (the test runner)
+The token supports:
 
-## Optional PDF
-Place a PDF statement in this folder (e.g. `problem.pdf`) and open it in a side tab.
+- `GET_INFO`: returns protocol/capability information.
+- `AUTH`: requires touch presence, increments a monotonic counter, and returns a
+  MAC over `challenge || nonce || counter` using a resident secret.
+
+## Your Task
+
+The firmware contains a replay-protection bug. A captured authentication request
+with the same nonce and challenge is accepted when it is replayed with a new HID
+transport sequence number.
+
+Fix the replay check so repeated `(nonce, challenge)` pairs return `ERR_REPLAY`.
+After the fix, the security validation should pass.
+
+## Important Files
+
+- `firmware/main.c` — token application logic and the intentional replay bug.
+- `firmware/token_protocol.h` — 64-byte report format, commands, statuses, CRC.
+- `renode/peripherals/MockUSBHIDHost.cs` — scripted mock HID host and checks.
+
+## Running Tests
+
+```bash
+docker compose up digital-twin
+```
+
+Expected initial state: functional checks pass, but replay rejection fails. The
+failure is intentional for this bug-fix challenge.

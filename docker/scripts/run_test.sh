@@ -2,49 +2,81 @@
 set -e
 
 OUTPUT_DIR=/workspace/output
-UART_FILE="$OUTPUT_DIR/uart_output.txt"
+UART_FILE="$OUTPUT_DIR/token_uart.txt"
+RENODE_LOG="$OUTPUT_DIR/renode.log"
 RESC_FILE=/workspace/renode/run_test.resc
 
 mkdir -p "$OUTPUT_DIR"
-rm -f "$UART_FILE"
+rm -f "$UART_FILE" "$RENODE_LOG" "$OUTPUT_DIR/report.html"
 
-echo "=== Running RP2040 firmware in Renode ==="
+echo "=== Running STM32F4 mock HID token scenario in Renode ==="
 
 renode --disable-xwt --console "$RESC_FILE" || true
 
 echo ""
-echo "=== UART Output ==="
+echo "=== Token UART Output ==="
 if [ ! -f "$UART_FILE" ]; then
-    echo "[ERROR] No UART output file found"
+    echo "[ERROR] No token UART output captured"
     exit 1
 fi
-
 cat "$UART_FILE"
-echo ""
-
-# Basic validation (sets exit code)
-PASS=true
-
-grep -q "BOOT: RP2040 Digital Twin POC"  "$UART_FILE" && echo "[PASS] Boot message"        || { echo "[FAIL] Boot message missing";        PASS=false; }
-grep -q "UART initialized successfully"  "$UART_FILE" && echo "[PASS] UART init"            || { echo "[FAIL] UART init missing";            PASS=false; }
-grep -q "LED ON  - cycle 0"              "$UART_FILE" && echo "[PASS] LED cycle output"      || { echo "[FAIL] LED cycle output missing";      PASS=false; }
-grep -q "TEST COMPLETE"                  "$UART_FILE" && echo "[PASS] Test complete"         || { echo "[FAIL] Test complete missing";         PASS=false; }
 
 echo ""
+echo "=== Validation ==="
+FUNCTIONAL_PASS=true
+SECURITY_PASS=true
 
-# Generate waveform PNG + HTML report
-if command -v python3 &>/dev/null; then
-    echo "=== Generating report ==="
-    python3 /workspace/scripts/generate_report.py "$OUTPUT_DIR" && \
-        echo "    → output/report.html" || \
-        echo "[WARN] Report generation failed (non-fatal)"
+check() {
+    local file="$1"
+    local pattern="$2"
+    local label="$3"
+    if [ -f "$file" ] && grep -qF "$pattern" "$file"; then
+        echo "[PASS] $label"
+    else
+        echo "[FAIL] $label"
+        FUNCTIONAL_PASS=false
+    fi
+}
+
+check "$UART_FILE" "TOKEN: boot YK-MOCK challenge-response" "Token boot"
+check "$UART_FILE" "TOKEN: GET_INFO seq=1 status=OK" "GET_INFO response"
+check "$UART_FILE" "TOKEN: AUTH seq=2 touch=1" "Touch-present AUTH path"
+check "$UART_FILE" "TOKEN: AUTH seq=3 touch=1" "Replay AUTH processed"
+check "$UART_FILE" "TOKEN: AUTH seq=4 touch=1" "Fresh AUTH processed"
+check "$UART_FILE" "TOKEN: SCRIPT COMPLETE" "Script completion"
+
+check "$RENODE_LOG" "MOCK_USB_HOST: OUT seq=1 label=GET_INFO" "Host sent GET_INFO"
+check "$RENODE_LOG" "MOCK_USB_HOST: CHECK GET_INFO OK" "Host validated GET_INFO"
+check "$RENODE_LOG" "MOCK_USB_HOST: CHECK AUTH_FIRST OK" "Host validated first AUTH"
+check "$RENODE_LOG" "MOCK_USB_HOST: CHECK AUTH_FRESH OK" "Host validated fresh AUTH"
+
+if [ -f "$RENODE_LOG" ] && grep -qF "MOCK_USB_HOST: SECURITY_FAIL replay accepted" "$RENODE_LOG"; then
+    echo "[FAIL] Replay rejection (intentional challenge bug exposed)"
+    SECURITY_PASS=false
+else
+    echo "[PASS] Replay rejection"
 fi
 
 echo ""
-if [ "$PASS" = true ]; then
-    echo ">>> ALL CHECKS PASSED - Digital twin behaves as expected <<<"
-    exit 0
+echo "=== Generating HTML report ==="
+python3 /workspace/scripts/generate_report.py "$OUTPUT_DIR" || true
+if [ -f "$OUTPUT_DIR/report.html" ]; then
+    echo "[PASS] report.html written to $OUTPUT_DIR"
 else
-    echo ">>> SOME CHECKS FAILED <<<"
+    echo "[WARN] Report generation failed"
+fi
+
+echo ""
+if [ "$FUNCTIONAL_PASS" = true ] && [ "$SECURITY_PASS" = true ]; then
+    echo ">>> ALL TOKEN SECURITY CHECKS PASSED <<<"
+    exit 0
+fi
+
+if [ "$FUNCTIONAL_PASS" = true ] && [ "$SECURITY_PASS" = false ]; then
+    echo ">>> FUNCTIONAL CHECKS PASSED; SECURITY BUG REPRODUCED <<<"
+    echo ">>> Student task: make replayed AUTH return ERR_REPLAY <<<"
     exit 1
 fi
+
+echo ">>> TOKEN SCENARIO FUNCTIONAL CHECKS FAILED <<<"
+exit 1
