@@ -7,11 +7,13 @@ WORKSPACE_FILE="/home/coder/.config/code-server/challenge.code-workspace"
 # Create directories and fix ownership (running as root)
 mkdir -p "${CHALLENGE_ROOT}/firmware" \
          "${CHALLENGE_ROOT}/problem" \
+         "${CHALLENGE_ROOT}/output" \
          "$(dirname "${WORKSPACE_FILE}")"
 chown coder:coder "${CHALLENGE_ROOT}" \
-                  "${CHALLENGE_ROOT}/firmware" \
-                  "${CHALLENGE_ROOT}/problem" \
                   "$(dirname "${WORKSPACE_FILE}")"
+chown -R coder:coder "${CHALLENGE_ROOT}/firmware" \
+                     "${CHALLENGE_ROOT}/problem" \
+                     "${CHALLENGE_ROOT}/output" 2>/dev/null || true
 
 # Write workspace file
 cat > "${WORKSPACE_FILE}" <<'JSON'

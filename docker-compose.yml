@@ -53,4 +53,7 @@ services:
       - ./ide/problem:/home/coder/challenge/problem:z
       - ./output:/home/coder/challenge/output:z
       - ./docker-compose.yml:/home/coder/docker-compose.yml:ro,z
+      # The nested Docker Compose client runs inside the IDE container, so it
+      # must be able to read the same project path it passes to the host daemon.
+      - .:${PWD}:ro,z
       - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock"
