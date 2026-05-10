@@ -42,6 +42,7 @@ grep -q "\[NODE\] LoRa TX:"      "$NODE_UART"  && echo "[PASS] Node LoRa TX"    
 grep -q "\[MASTER\] Boot:"       "$MASTER_UART" && echo "[PASS] Master boot"     || { echo "[FAIL] Master boot missing";      PASS=false; }
 grep -q "\[MASTER\] Poll #"      "$MASTER_UART" && echo "[PASS] Master poll"     || { echo "[FAIL] Master poll missing";      PASS=false; }
 grep -q "humidity="              "$MASTER_UART" && echo "[PASS] Master humidity" || { echo "[FAIL] Master humidity missing";  PASS=false; }
+grep -q "ALERT"                   "$MASTER_UART" && echo "[PASS] Master alert"   || { echo "[FAIL] Master alert missing";    PASS=false; }
 
 echo ""
 if [ "$PASS" = true ]; then

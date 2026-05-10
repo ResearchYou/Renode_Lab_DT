@@ -1,4 +1,4 @@
-# Challenge: I2C Humidity Node + LoRaWAN Broadcast
+# Challenge: I2C Humidity Threshold Alerts
 
 ## Scenario
 
@@ -11,19 +11,20 @@ Two RP2040 microcontrollers communicate over I2C:
   I2C1 slave — responds to master
 ```
 
-The **node** samples humidity from an HDC1080 sensor, broadcasts each reading
-over LoRaWAN (SX1276), and exposes the latest value to the master via I2C slave.
+The **node** reads humidity every 2 seconds from HDC1080 and exposes it on the
+I2C slave register `0x01`.
 
-The **master** polls the node every 3 seconds and logs the received humidity.
+The **master** periodically reads humidity and raises an alert in UART output when
+the value exceeds a configured threshold.
 
 ## Your task
 
 Both firmwares are complete and runnable. Extend or modify them:
 
-- **Node** (`firmware/node/main.c`): adjust the LoRa frame format, sampling
-  rate, or add temperature to the payload.
-- **Master** (`firmware/master/main.c`): parse multi-value frames, add
-  threshold alerting, or request temperature as well.
+- **Node** (`firmware/node/main.c`): keep the humidity sampling path stable and
+  deterministic.
+- **Master** (`firmware/master/main.c`): process threshold-based alerts and print
+  a human-readable warning whenever the value is above the limit.
 
 ## Hardware mapping
 
@@ -38,27 +39,11 @@ Both firmwares are complete and runnable. Extend or modify them:
 | SX1276 MOSI  | GP19     | —          |
 | SX1276 MISO  | GP16     | —          |
 
-## Simulation notes
-
-In the Renode simulation:
-
-- `renode/peripherals/hdc1080.py` — I2C peripheral that returns oscillating
-  humidity values (40–80%) on the node's I2C0 bus.
-- `renode/peripherals/sx1276.py` — SPI peripheral that logs LoRa TX events to
-  the Renode log when TX mode is triggered.
-- `renode/peripherals/node_i2c_bridge.py` — I2C peripheral on the master's
-  I2C0 bus that simulates the node's slave response (returns the same humidity
-  curve as the HDC1080 model).
-
-True inter-machine I2C wiring is not modelled; each machine's peripherals are
-simulated independently. On real hardware the node's I2C1 slave and the
-master's I2C0 master connect directly.
-
 ## Running tests
 
 ```bash
 docker compose up digital-twin
 ```
 
-Pass condition: both UARTs show boot messages, node logs sensor reads and LoRa
-TX events, master logs humidity poll results.
+Pass condition: both UARTs show boot messages, node logs humidity reads and LoRa
+TX events, and master reports at least one threshold alert.

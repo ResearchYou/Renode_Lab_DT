@@ -16,6 +16,7 @@
 
 #define NODE_I2C_ADDR       0x08
 #define NODE_REG_HUMIDITY   0x01
+#define HUMIDITY_THRESHOLD  60.0f
 
 #define POLL_INTERVAL_MS    3000
 
@@ -61,8 +62,14 @@ int main(void) {
 
         float humidity = poll_node_humidity();
         if (humidity >= 0.0f) {
-            printf("[MASTER] Poll #%lu: humidity=%.2f%%\n",
-                   (unsigned long)++poll_count, humidity);
+            ++poll_count;
+            if (humidity >= HUMIDITY_THRESHOLD) {
+                printf("[MASTER] Poll #%lu: humidity=%.2f%% ALERT>=%.1f\n",
+                       (unsigned long)poll_count, humidity, HUMIDITY_THRESHOLD);
+            } else {
+                printf("[MASTER] Poll #%lu: humidity=%.2f%%\n",
+                       (unsigned long)poll_count, humidity);
+            }
         }
     }
 

@@ -48,6 +48,7 @@ def parse_master_uart(filepath):
         "master_boot": False,
         "master_poll": False,
         "master_humidity": False,
+        "master_alert": False,
     }
     humidity_readings = []
 
@@ -75,6 +76,8 @@ def parse_master_uart(filepath):
                 humidity_readings.append(
                     {"poll": poll_num, "humidity": float(hum_match.group(1))}
                 )
+            if "ALERT" in line:
+                checks["master_alert"] = True
         if "humidity=" in line and "[MASTER]" in line:
             checks["master_humidity"] = True
 
@@ -147,6 +150,10 @@ def build_report_data(
         {
             "name": "Master humidity reading",
             "passed": master_checks["master_humidity"],
+        },
+        {
+            "name": "Master threshold alert",
+            "passed": master_checks["master_alert"],
         },
     ]
     return {
