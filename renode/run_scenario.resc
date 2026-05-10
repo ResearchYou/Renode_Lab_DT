@@ -1,12 +1,13 @@
-# Renode scenario: dual RP2040 - I2C humidity polling + LoRaWAN broadcast
+# Renode scenario: dual RP2040 - commandable I2C polling interval
 #
 # Two machines run concurrently:
 #
 #   master  - polls node at I2C address 0x08 every 3 s, logs to master_uart.txt
 #             NodeI2CBridge on master's I2C0 simulates the node slave
 #
-#   node    - reads HDC1080 humidity sensor (I2C0) every 2 s, broadcasts via
-#             SX1276 LoRa (SPI0), logs to node_uart.txt
+#   node    - reads HDC1080 humidity sensor (I2C0), responds to sample interval
+#             commands, broadcasts via SX1276 LoRa (SPI0), logs to node_uart.txt
+#             Master commands interval changes using control register writes.
 #             HDC1080Device and SX1276Device are registered on node's buses
 #
 # Both machines use a PIO-free platform description to avoid native PIO

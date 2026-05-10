@@ -18,7 +18,12 @@ import matplotlib.pyplot as plt
 
 def parse_node_uart(filepath):
     events = []
-    checks = {"node_boot": False, "node_sensor": False, "node_lora": False}
+    checks = {
+        "node_boot": False,
+        "node_sensor": False,
+        "node_lora": False,
+        "node_command": False,
+    }
     if not os.path.exists(filepath):
         return events, checks, ""
 
@@ -38,6 +43,9 @@ def parse_node_uart(filepath):
         if "[NODE] LoRa TX:" in line:
             checks["node_lora"] = True
             events.append({"type": "lora_tx", "machine": "node", "message": line})
+        if "Command:" in line:
+            checks["node_command"] = True
+            events.append({"type": "command", "machine": "node", "message": line})
 
     return events, checks, raw.strip()
 
@@ -48,6 +56,7 @@ def parse_master_uart(filepath):
         "master_boot": False,
         "master_poll": False,
         "master_humidity": False,
+        "master_command": False,
     }
     humidity_readings = []
 
@@ -77,6 +86,8 @@ def parse_master_uart(filepath):
                 )
         if "humidity=" in line and "[MASTER]" in line:
             checks["master_humidity"] = True
+        if "Sent command" in line:
+            checks["master_command"] = True
 
     return events, checks, humidity_readings, raw.strip()
 
@@ -142,12 +153,14 @@ def build_report_data(
         {"name": "Node boot message", "passed": node_checks["node_boot"]},
         {"name": "Node HDC1080 sensor read", "passed": node_checks["node_sensor"]},
         {"name": "Node LoRa TX", "passed": node_checks["node_lora"]},
+        {"name": "Node command handling", "passed": node_checks["node_command"]},
         {"name": "Master boot message", "passed": master_checks["master_boot"]},
         {"name": "Master poll cycle", "passed": master_checks["master_poll"]},
         {
             "name": "Master humidity reading",
             "passed": master_checks["master_humidity"],
         },
+        {"name": "Master command writes", "passed": master_checks["master_command"]},
     ]
     return {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

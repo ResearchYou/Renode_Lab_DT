@@ -42,11 +42,16 @@
 /* ── I2C1 slave ───────────────────────────────────────────────── */
 #define NODE_SLAVE_ADDR 0x08
 #define NODE_REG_HUMIDITY 0x01
+#define NODE_CMD_FAST_SAMPLE 0x11
+#define NODE_CMD_SLOW_SAMPLE 0x10
 
 #define SAMPLE_INTERVAL_MS 2000
+#define SAMPLE_INTERVAL_FAST_MS 1000
+#define SAMPLE_INTERVAL_SLOW_MS 5000
 
-    /* Humidity in units of 0.01% (e.g. 6050 = 60.50%) shared with I2C slave */
-    static volatile uint16_t g_humidity_x100 = 0;
+/* Humidity in units of 0.01% (e.g. 6050 = 60.50%) shared with I2C slave */
+static volatile uint16_t g_humidity_x100 = 0;
+static volatile uint32_t g_sample_interval_ms = SAMPLE_INTERVAL_MS;
 
 /* ── HDC1080 ──────────────────────────────────────────────────── */
 static float hdc1080_read_humidity(void) {
@@ -131,6 +136,20 @@ static void i2c1_slave_poll(void) {
       /* Queue 2 bytes for master read */
       hw->data_cmd = (val >> 8) & 0xFFu;
       hw->data_cmd = val & 0xFFu;
+      return;
+    }
+
+    if (reg == NODE_CMD_FAST_SAMPLE) {
+      g_sample_interval_ms = SAMPLE_INTERVAL_FAST_MS;
+      printf("[NODE] Command: fast sampling interval = %lu ms\n",
+             (unsigned long)g_sample_interval_ms);
+      return;
+    }
+
+    if (reg == NODE_CMD_SLOW_SAMPLE) {
+      g_sample_interval_ms = SAMPLE_INTERVAL_SLOW_MS;
+      printf("[NODE] Command: slow sampling interval = %lu ms\n",
+             (unsigned long)g_sample_interval_ms);
     }
   }
 }
@@ -175,11 +194,12 @@ int main(void) {
   while (1) {
     uint32_t now_ms = time_us_32() / 1000;
 
-    if (now_ms - last_sample_ms >= SAMPLE_INTERVAL_MS) {
+    if (now_ms - last_sample_ms >= g_sample_interval_ms) {
       float humidity = hdc1080_read_humidity();
       g_humidity_x100 = (uint16_t)(humidity * 100.0f);
       printf("[NODE] HDC1080: %.1f%% humidity\n", humidity);
       lora_transmit(humidity);
+      printf("[NODE] Next sample in %lu ms\n", (unsigned long)g_sample_interval_ms);
       last_sample_ms = now_ms;
     }
 

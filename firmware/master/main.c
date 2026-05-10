@@ -16,6 +16,8 @@
 
 #define NODE_I2C_ADDR       0x08
 #define NODE_REG_HUMIDITY   0x01
+#define NODE_CMD_FAST_SAMPLE 0x11
+#define NODE_CMD_SLOW_SAMPLE 0x10
 
 #define POLL_INTERVAL_MS    3000
 
@@ -41,6 +43,14 @@ static float poll_node_humidity(void) {
     return val / 100.0f;
 }
 
+static void send_sample_interval_command(uint8_t command) {
+    int rc = i2c_write_blocking(i2c0, NODE_I2C_ADDR, &command, 1, false);
+    if (rc == PICO_ERROR_GENERIC) {
+        printf("[MASTER] ERROR: failed to send sample interval command 0x%02X\n",
+               command);
+    }
+}
+
 int main(void) {
     stdio_init_all();
     printf("[MASTER] Boot: polling master\n");
@@ -59,10 +69,21 @@ int main(void) {
     while (1) {
         sleep_ms(POLL_INTERVAL_MS);
 
+        if ((poll_count % 2) == 0) {
+            send_sample_interval_command(NODE_CMD_FAST_SAMPLE);
+            printf("[MASTER] Sent command 0x%02X (fast sample)\n",
+                   NODE_CMD_FAST_SAMPLE);
+        } else if ((poll_count % 2) == 1) {
+            send_sample_interval_command(NODE_CMD_SLOW_SAMPLE);
+            printf("[MASTER] Sent command 0x%02X (slow sample)\n",
+                   NODE_CMD_SLOW_SAMPLE);
+        }
+
         float humidity = poll_node_humidity();
         if (humidity >= 0.0f) {
-            printf("[MASTER] Poll #%lu: humidity=%.2f%%\n",
-                   (unsigned long)++poll_count, humidity);
+            ++poll_count;
+            printf("[MASTER] Poll #%lu: humidity=%.2f%% interval-commanded\n",
+                   (unsigned long)poll_count, humidity);
         }
     }
 
