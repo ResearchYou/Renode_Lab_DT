@@ -54,5 +54,8 @@ detect_socket() {
 DOCKER_SOCKET_PATH="$(detect_socket)"
 export DOCKER_SOCKET_PATH
 
+HOST_PROJECT_DIR="${HOST_PROJECT_DIR:-$PWD}"
+export HOST_PROJECT_DIR
+
 echo "run.sh: Docker socket → $DOCKER_SOCKET_PATH"
 exec docker compose "$@"
