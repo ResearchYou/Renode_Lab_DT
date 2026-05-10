@@ -10,6 +10,7 @@ GET  /api/status — {"running": bool}
 import http.server
 import json
 import os
+import signal
 import subprocess
 import threading
 
@@ -18,7 +19,7 @@ PROJECT_DIR = os.environ.get("HOST_PROJECT_DIR", "")
 RUNNER_SERVICE = os.environ.get("RUNNER_SERVICE", "digital-twin")
 
 _lock = threading.Lock()
-_current = None  # active Popen
+_current = None  # active Popen, or "starting" while the subprocess is spawning
 
 
 # ── Runner ────────────────────────────────────────────────────────
@@ -27,21 +28,32 @@ _current = None  # active Popen
 def run_test(emit):
     global _current
 
+    with _lock:
+        if _current is not None:
+            emit("error", "[ERROR] already running")
+            emit("done", "1")
+            return
+        _current = "starting"
+
     if not PROJECT_DIR:
         emit("error", "[ERROR] HOST_PROJECT_DIR is not set — cannot locate project")
         emit("done", "1")
+        with _lock:
+            _current = None
         return
 
-    try:
-        os.makedirs(PROJECT_DIR, exist_ok=True)
-        os.makedirs(os.path.join(PROJECT_DIR, "docker"), exist_ok=True)
-        with open(os.path.join(PROJECT_DIR, "docker", "Dockerfile"), "a"):
-            pass
-        with open(os.path.join(PROJECT_DIR, "docker", "Dockerfile.ide"), "a"):
-            pass
-    except Exception as exc:
-        emit("error", f"[ERROR] failed to create HOST_PROJECT_DIR: {exc}")
+    if not os.path.isdir(PROJECT_DIR):
+        emit("error", f"[ERROR] HOST_PROJECT_DIR is not mounted: {PROJECT_DIR}")
         emit("done", "1")
+        with _lock:
+            _current = None
+        return
+
+    if not os.path.exists(COMPOSE_FILE):
+        emit("error", f"[ERROR] compose file is not mounted: {COMPOSE_FILE}")
+        emit("done", "1")
+        with _lock:
+            _current = None
         return
 
     cmd = [
@@ -63,24 +75,31 @@ def run_test(emit):
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
+            start_new_session=True,
         )
     except Exception as exc:
         emit("error", f"[ERROR] failed to start: {exc}")
         emit("done", "1")
+        with _lock:
+            _current = None
         return
 
     with _lock:
         _current = proc
 
-    for line in proc.stdout:
-        emit("line", line.rstrip("\n"))
+    returncode = 1
+    try:
+        for line in proc.stdout:
+            emit("line", line.rstrip("\n"))
 
-    proc.wait()
+        proc.wait()
+        returncode = proc.returncode
+    finally:
+        with _lock:
+            if _current is proc:
+                _current = None
 
-    with _lock:
-        _current = None
-
-    emit("done", str(proc.returncode))
+    emit("done", str(returncode))
 
 
 # ── HTTP handler ──────────────────────────────────────────────────
@@ -116,11 +135,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     # ── /api/run — SSE stream ──
     def _handle_run(self):
-        with _lock:
-            if _current is not None:
-                self._json({"error": "already running"}, status=409)
-                return
-
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
         self.send_header("Cache-Control", "no-cache")
@@ -142,9 +156,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
         global _current
         with _lock:
             proc = _current
-        if proc:
-            proc.terminate()
+
+        if isinstance(proc, subprocess.Popen) and proc.poll() is None:
+            try:
+                os.killpg(proc.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
             msg = "stopped"
+        elif proc == "starting":
+            msg = "starting"
         else:
             msg = "not running"
         self._json({"status": msg})
@@ -169,5 +189,5 @@ if __name__ == "__main__":
         f"[runner] service={RUNNER_SERVICE!r}  project={PROJECT_DIR!r}",
         flush=True,
     )
-    server = http.server.HTTPServer(("127.0.0.1", 3001), Handler)
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 3001), Handler)
     server.serve_forever()

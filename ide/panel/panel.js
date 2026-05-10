@@ -10,6 +10,8 @@
   var isDragging = false;
   var isRunning = false;
   var streamReader = null;
+  var runToken = 0;
+  var stopRequested = false;
 
   function clampWidth(px) {
     var max = Math.floor(window.innerWidth * MAX_WIDTH_RATIO);
@@ -264,6 +266,17 @@
   function startRun() {
     if (isRunning) return;
 
+    var token = ++runToken;
+    var completed = false;
+    stopRequested = false;
+
+    function complete(exitCode) {
+      if (completed || token !== runToken) return;
+      completed = true;
+      streamReader = null;
+      finishRun(exitCode);
+    }
+
     var placeholder = document.querySelector("#cp-terminal .t-placeholder");
     if (placeholder) placeholder.remove();
 
@@ -284,8 +297,7 @@
             .read()
             .then(function (chunk) {
               if (chunk.done) {
-                finishRun(0);
-                streamReader = null;
+                complete(1);
                 return;
               }
 
@@ -296,7 +308,7 @@
               parts.forEach(function (block) {
                 parseSSEChunkText(block + "\n\n", function (eventType, data) {
                   if (eventType === "done") {
-                    finishRun(parseInt(data, 10) || 0);
+                    complete(parseInt(data, 10) || 0);
                     return;
                   }
                   appendTerminalLine(data, lineClass(data));
@@ -306,8 +318,13 @@
               readLoop();
             })
             .catch(function () {
+              if (stopRequested && token === runToken) {
+                completed = true;
+                streamReader = null;
+                return;
+              }
               streamReader = null;
-              finishRun(1);
+              complete(1);
             });
         }
 
@@ -315,11 +332,12 @@
       })
       .catch(function (err) {
         appendTerminalLine("[ERROR] " + err.message, "t-err");
-        finishRun(1);
+        complete(1);
       });
   }
 
   function stopRun() {
+    stopRequested = true;
     fetch("/api/stop", { method: "POST" }).catch(function () {});
     if (streamReader) {
       try {
@@ -327,6 +345,7 @@
       } catch (_) {}
       streamReader = null;
     }
+    runToken++;
     setRunning(false);
     appendTerminalLine("── Stopped ──────────────────────────", "t-warn");
   }
