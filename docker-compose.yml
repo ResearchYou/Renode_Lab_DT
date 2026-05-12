@@ -8,11 +8,16 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     container_name: rp2040-digital-twin
+    userns_mode: host
     security_opt:
       - label:disable
     volumes:
       - ./firmware:/workspace/firmware:ro,z
       - ./renode:/workspace/renode:ro,z
+      - ./docker/scripts/entrypoint.sh:/workspace/scripts/entrypoint.sh:ro,z
+      - ./docker/scripts/build_firmware.sh:/workspace/scripts/build_firmware.sh:ro,z
+      - ./docker/scripts/run_test.sh:/workspace/scripts/run_test.sh:ro,z
+      - ./docker/scripts/generate_report.py:/workspace/scripts/generate_report.py:ro,z
       - ./output:/workspace/output:z
     entrypoint: ["/bin/bash", "/workspace/scripts/entrypoint.sh"]
 
@@ -25,11 +30,14 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     container_name: rp2040-digital-twin-metrics
+    userns_mode: host
     security_opt:
       - label:disable
     volumes:
       - ./firmware:/workspace/firmware:ro,z
       - ./renode:/workspace/renode:ro,z
+      - ./docker/scripts/build_firmware.sh:/workspace/scripts/build_firmware.sh:ro,z
+      - ./docker/scripts/run_metrics.sh:/workspace/scripts/run_metrics.sh:ro,z
       - ./output:/workspace/output:z
     entrypoint: ["/bin/bash", "-c", "/workspace/scripts/build_firmware.sh && /workspace/scripts/run_metrics.sh"]
     profiles:
@@ -41,12 +49,13 @@ services:
       dockerfile: docker/Dockerfile.ide
       network: host
     container_name: challenge-ide
+    userns_mode: host
     security_opt:
       - label:disable
     ports:
       - "8443:8080"
     environment:
-      - "HOST_PROJECT_DIR=${PWD}"
+      - "HOST_PROJECT_DIR=${HOST_PROJECT_DIR}"
       - "RUNNER_SERVICE=digital-twin"
     volumes:
       - ./firmware:/home/coder/challenge/firmware:z
@@ -55,5 +64,5 @@ services:
       - ./docker-compose.yml:/home/coder/docker-compose.yml:ro,z
       # The nested Docker Compose client runs inside the IDE container, so it
       # must be able to read the same project path it passes to the host daemon.
-      - .:${PWD}:ro,z
+      - .:${HOST_PROJECT_DIR}:ro,z
       - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock"
