@@ -33,6 +33,12 @@ COPY docker/scripts/start_ide.sh /usr/local/bin/start_ide.sh
 COPY ide/runner.py                /usr/local/bin/runner.py
 RUN chmod +x /usr/local/bin/start_ide.sh /usr/local/bin/runner.py
 
+COPY docker-compose.yml /home/coder/docker-compose.yml
+COPY --chown=coder:coder firmware/ /home/coder/challenge/firmware/
+COPY --chown=coder:coder ide/problem/ /home/coder/challenge/problem/
+RUN mkdir -p /home/coder/challenge/output \
+    && chown -R coder:coder /home/coder/challenge /home/coder/docker-compose.yml
+
 COPY --chown=coder:coder ide/panel/      /home/coder/panel/
 COPY --chown=coder:coder ide/nginx.conf  /home/coder/nginx.conf
 
