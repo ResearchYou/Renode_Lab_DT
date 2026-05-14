@@ -39,6 +39,27 @@ The volumes are seeded from the image on first start. They remain after
 containers are removed; use `./run.sh down -v` only when you want to delete that
 instance's stored code and output.
 
+## Kubernetes storage
+
+Kubernetes owns persistence. Mount per-user PersistentVolumeClaims at the same
+paths used by Compose:
+
+- `/home/coder/challenge/firmware` in the IDE and `/workspace/firmware` in the
+  digital twin
+- `/home/coder/challenge/output` in the IDE and `/workspace/output` in the
+  digital twin
+- `/home/coder/challenge/problem` in the IDE
+
+The IDE image stores default challenge files under `/opt/challenge-seed` and
+copies them into empty firmware/problem mounts on startup. This matters in
+Kubernetes because PVC mounts hide image files and are not automatically
+initialized from the image.
+
+Use a separate PVC set per user/session if users should be isolated. If platform
+admins need direct access to saved code, back those PVCs with a storage class
+that supports the desired access workflow, for example snapshots, RWX/NFS, or
+mounting the PVC into an admin/debug pod.
+
 ## Notes
 
 - Place a `problem.md` (or `problem.pdf`) in `./ide/problem/` before building the
