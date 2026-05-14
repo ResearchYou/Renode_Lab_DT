@@ -15,7 +15,7 @@ import subprocess
 import threading
 
 COMPOSE_FILE = "/home/coder/docker-compose.yml"
-PROJECT_DIR = os.environ.get("HOST_PROJECT_DIR", "")
+PROJECT_NAME = os.environ.get("COMPOSE_PROJECT_NAME", "")
 RUNNER_SERVICE = os.environ.get("RUNNER_SERVICE", "digital-twin")
 
 _lock = threading.Lock()
@@ -35,22 +35,8 @@ def run_test(emit):
             return
         _current = "starting"
 
-    if not PROJECT_DIR:
-        emit("error", "[ERROR] HOST_PROJECT_DIR is not set — cannot locate project")
-        emit("done", "1")
-        with _lock:
-            _current = None
-        return
-
-    if not os.path.isdir(PROJECT_DIR):
-        emit("error", f"[ERROR] HOST_PROJECT_DIR is not mounted: {PROJECT_DIR}")
-        emit("done", "1")
-        with _lock:
-            _current = None
-        return
-
     if not os.path.exists(COMPOSE_FILE):
-        emit("error", f"[ERROR] compose file is not mounted: {COMPOSE_FILE}")
+        emit("error", f"[ERROR] compose file is not available: {COMPOSE_FILE}")
         emit("done", "1")
         with _lock:
             _current = None
@@ -60,12 +46,10 @@ def run_test(emit):
         "docker-compose",
         "-f",
         COMPOSE_FILE,
-        "--project-directory",
-        PROJECT_DIR,
-        "run",
-        "--rm",
-        RUNNER_SERVICE,
     ]
+    if PROJECT_NAME:
+        cmd.extend(["-p", PROJECT_NAME])
+    cmd.extend(["run", "--rm", RUNNER_SERVICE])
     emit("info", "$ " + " ".join(cmd))
 
     try:
@@ -186,7 +170,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     print(
-        f"[runner] service={RUNNER_SERVICE!r}  project={PROJECT_DIR!r}",
+        f"[runner] service={RUNNER_SERVICE!r}  compose_project={PROJECT_NAME!r}",
         flush=True,
     )
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 3001), Handler)
