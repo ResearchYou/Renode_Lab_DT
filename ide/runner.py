@@ -2,99 +2,88 @@
 """
 Minimal SSE runner for the challenge IDE.
 
-POST /api/run   — trigger a test run and stream output (text/event-stream)
-POST /api/stop  — abort the current run
+POST /api/run   — stream test run output (text/event-stream)
+POST /api/stop  — kill the running process
 GET  /api/status — {"running": bool}
-
-The runner communicates with the digital-twin daemon via two files in the
-shared output volume — no Docker socket access needed:
-
-  .trigger   written by runner  → tells daemon to start a run
-  run.log    written by daemon  → runner streams this line-by-line until
-                                  a final "EXIT:<code>" line appears
 """
 
 import http.server
 import json
 import os
+import signal
+import subprocess
 import threading
-import time
 
-OUTPUT_DIR   = "/home/coder/challenge/output"
-TRIGGER_FILE = os.path.join(OUTPUT_DIR, ".trigger")
-LOG_FILE     = os.path.join(OUTPUT_DIR, "run.log")
-RUN_TIMEOUT  = 300   # seconds before the runner gives up
+COMPOSE_FILE = "/home/coder/docker-compose.yml"
+PROJECT_NAME = os.environ.get("COMPOSE_PROJECT_NAME", "")
+RUNNER_SERVICE = os.environ.get("RUNNER_SERVICE", "digital-twin")
 
-_lock    = threading.Lock()
-_running = [False]
-_stop    = [False]
+_lock = threading.Lock()
+_current = None  # active Popen, or "starting" while the subprocess is spawning
 
 
 # ── Runner ────────────────────────────────────────────────────────
 
 
 def run_test(emit):
+    global _current
+
     with _lock:
-        if _running[0]:
+        if _current is not None:
             emit("error", "[ERROR] already running")
             emit("done", "1")
             return
-        _running[0] = True
-        _stop[0] = False
+        _current = "starting"
+
+    if not os.path.exists(COMPOSE_FILE):
+        emit("error", f"[ERROR] compose file is not available: {COMPOSE_FILE}")
+        emit("done", "1")
+        with _lock:
+            _current = None
+        return
+
+    cmd = [
+        "docker-compose",
+        "-f",
+        COMPOSE_FILE,
+    ]
+    if PROJECT_NAME:
+        cmd.extend(["-p", PROJECT_NAME])
+    cmd.extend(["run", "--rm", RUNNER_SERVICE])
+    emit("info", "$ " + " ".join(cmd))
 
     try:
-        _do_run(emit)
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            start_new_session=True,
+        )
+    except Exception as exc:
+        emit("error", f"[ERROR] failed to start: {exc}")
+        emit("done", "1")
+        with _lock:
+            _current = None
+        return
+
+    with _lock:
+        _current = proc
+
+    returncode = 1
+    try:
+        for line in proc.stdout:
+            emit("line", line.rstrip("\n"))
+
+        proc.wait()
+        returncode = proc.returncode
     finally:
         with _lock:
-            _running[0] = False
+            if _current is proc:
+                _current = None
 
-
-def _do_run(emit):
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    # Truncate log so stale content is never read
-    try:
-        open(LOG_FILE, "w").close()
-    except OSError as exc:
-        emit("error", f"[ERROR] cannot clear log: {exc}")
-        emit("done", "1")
-        return
-
-    # Write trigger — daemon picks this up and starts the test
-    try:
-        open(TRIGGER_FILE, "w").close()
-    except OSError as exc:
-        emit("error", f"[ERROR] cannot write trigger: {exc}")
-        emit("done", "1")
-        return
-
-    emit("info", "$ [digital-twin] run triggered")
-
-    # Stream log file until EXIT:<code> marker or timeout
-    deadline = time.monotonic() + RUN_TIMEOUT
-    rc = 1
-
-    try:
-        with open(LOG_FILE, "r") as fh:
-            while time.monotonic() < deadline:
-                if _stop[0]:
-                    emit("error", "[STOPPED]")
-                    return
-
-                line = fh.readline()
-                if line:
-                    if line.startswith("EXIT:"):
-                        rc = int(line[5:].strip())
-                        break
-                    emit("line", line.rstrip("\n"))
-                else:
-                    time.sleep(0.1)
-            else:
-                emit("error", "[ERROR] run timed out")
-    except OSError as exc:
-        emit("error", f"[ERROR] cannot read log: {exc}")
-
-    emit("done", str(rc))
+    emit("done", str(returncode))
 
 
 # ── HTTP handler ──────────────────────────────────────────────────
@@ -104,6 +93,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, *_):
         pass
 
+    # ── CORS pre-flight ──
     def do_OPTIONS(self):
         self.send_response(204)
         self._cors()
@@ -112,7 +102,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/api/status":
             with _lock:
-                running = _running[0]
+                running = _current is not None
             self._json({"running": running})
         else:
             self.send_response(404)
@@ -127,16 +117,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+    # ── /api/run — SSE stream ──
     def _handle_run(self):
-        with _lock:
-            if _running[0]:
-                self._json({"error": "already running"}, status=409)
-                return
-
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
         self.send_header("Cache-Control", "no-cache")
-        self.send_header("X-Accel-Buffering", "no")
+        self.send_header("X-Accel-Buffering", "no")  # tell nginx not to buffer SSE
         self._cors()
         self.end_headers()
 
@@ -149,20 +135,25 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         run_test(emit)
 
+    # ── /api/stop ──
     def _handle_stop(self):
+        global _current
         with _lock:
-            running = _running[0]
-        if running:
-            _stop[0] = True
+            proc = _current
+
+        if isinstance(proc, subprocess.Popen) and proc.poll() is None:
             try:
-                os.remove(TRIGGER_FILE)
-            except FileNotFoundError:
+                os.killpg(proc.pid, signal.SIGTERM)
+            except ProcessLookupError:
                 pass
             msg = "stopped"
+        elif proc == "starting":
+            msg = "starting"
         else:
             msg = "not running"
         self._json({"status": msg})
 
+    # ── helpers ──
     def _cors(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -178,6 +169,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print("[runner] started — waiting for /api/run requests", flush=True)
-    server = http.server.HTTPServer(("127.0.0.1", 3001), Handler)
+    print(
+        f"[runner] service={RUNNER_SERVICE!r}  compose_project={PROJECT_NAME!r}",
+        flush=True,
+    )
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 3001), Handler)
     server.serve_forever()

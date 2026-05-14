@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - master-restructure
+      - dev/*
   workflow_dispatch:
 
 jobs:
@@ -111,3 +112,47 @@ jobs:
           SOURCE_DIR="$(cat .source-dir)"
           cd "$SOURCE_DIR"
           docker compose build
+
+      - name: Sanity check - code-server and Renode
+        run: |
+          set -eu
+          SOURCE_DIR="$(cat .source-dir)"
+          cd "$SOURCE_DIR"
+
+          cleanup() {
+            echo "--- cleanup ---"
+            docker compose down --remove-orphans || true
+          }
+          trap cleanup EXIT
+
+          # Start IDE in detached mode
+          docker compose up -d ide
+
+          # Poll nginx inside the IDE container (port 8080).
+          # The host-mapped port 8443 is unreachable from within the job container.
+          echo "Waiting for code-server (nginx:8080 inside challenge-ide)..."
+          CODE_SERVER_UP=false
+          for i in $(seq 1 30); do
+            if docker exec challenge-ide curl -sf http://localhost:8080 >/dev/null 2>&1; then
+              CODE_SERVER_UP=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$CODE_SERVER_UP" = "false" ]; then
+            echo "[FAIL] code-server did not respond after 60s"
+            docker compose logs ide
+            exit 1
+          fi
+          echo "[PASS] code-server is listening (nginx:8080 inside challenge-ide)"
+
+          # Verify Renode is installed and executable in the digital-twin image.
+          # We override the entrypoint to avoid volume bind-mounts (which resolve
+          # against the host filesystem, not the job container, when using the
+          # Docker socket — so firmware paths would be empty on the host).
+          echo "Checking Renode binary in digital-twin image..."
+          docker compose run --rm --no-deps \
+            --entrypoint /bin/bash \
+            digital-twin \
+            -c "renode --version && echo '[PASS] Renode is functional'"
