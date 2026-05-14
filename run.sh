@@ -4,6 +4,7 @@
 # Usage:  ./run.sh [compose args...]
 #   e.g.  ./run.sh up ide
 #          ./run.sh up -d ide
+#          COMPOSE_PROJECT_NAME=user1 IDE_PORT=8444 ./run.sh up -d ide
 #          ./run.sh down
 #
 # The Docker socket path varies by installation:
@@ -54,5 +55,13 @@ detect_socket() {
 DOCKER_SOCKET_PATH="$(detect_socket)"
 export DOCKER_SOCKET_PATH
 
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-renode_dt}"
+export COMPOSE_PROJECT_NAME
+
+IDE_PORT="${IDE_PORT:-8443}"
+export IDE_PORT
+
 echo "run.sh: Docker socket → $DOCKER_SOCKET_PATH"
+echo "run.sh: Compose project → $COMPOSE_PROJECT_NAME"
+echo "run.sh: IDE port → $IDE_PORT"
 exec docker compose "$@"
