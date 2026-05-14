@@ -35,11 +35,13 @@ RUN wget -q https://github.com/renode/renode/releases/download/v${RENODE_VERSION
     && rm renode-${RENODE_VERSION}.linux-portable.tar.gz
 
 # Create working directories
-RUN mkdir -p /workspace/firmware /workspace/build /workspace/output
+RUN mkdir -p /workspace/firmware /workspace/build /workspace/output /workspace/renode
 
 WORKDIR /workspace
 
 COPY docker/scripts/ /workspace/scripts/
+COPY renode/ /workspace/renode/
+COPY firmware/ /workspace/firmware/
 COPY --from=report-build /app/dist/index.html /workspace/scripts/report_template.html
 RUN chmod +x /workspace/scripts/*.sh
 
