@@ -1,6 +1,4 @@
 output/
-firmware/
-renode/
 .git/
 .claude/
 report-app/node_modules/

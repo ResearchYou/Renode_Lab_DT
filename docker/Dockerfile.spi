@@ -18,11 +18,13 @@ RUN apt-get update \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /workspace/firmware /workspace/build /workspace/output
+RUN mkdir -p /workspace/firmware /workspace/build /workspace/output /workspace/renode
 
 WORKDIR /workspace
 
 COPY docker/scripts/ /workspace/scripts/
+COPY renode/ /workspace/renode/
+COPY firmware/ /workspace/firmware/
 RUN chmod +x /workspace/scripts/*.sh
 
 ENTRYPOINT ["/bin/bash"]

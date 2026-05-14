@@ -1,0 +1,60 @@
+name: docker-compose-build
+
+on:
+  push:
+    branches:
+      - master
+      - master-restructure
+      - dev/**
+  workflow_dispatch:
+
+jobs:
+  compose-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build all compose services
+        run: docker compose build
+
+      - name: Sanity check - code-server and Renode
+        run: |
+          set -eu
+
+          cleanup() {
+            echo "--- cleanup ---"
+            docker compose down --remove-orphans || true
+          }
+          trap cleanup EXIT
+
+          # Start IDE in detached mode
+          docker compose up -d ide
+
+          # Poll until nginx responds on the host-mapped port.
+          # On GitHub-hosted runners the job runs on the VM directly,
+          # so localhost:8443 is reachable.
+          echo "Waiting for code-server on :8443..."
+          CODE_SERVER_UP=false
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8443 >/dev/null 2>&1; then
+              CODE_SERVER_UP=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$CODE_SERVER_UP" = "false" ]; then
+            echo "[FAIL] code-server did not respond on :8443 after 60s"
+            docker compose logs ide
+            exit 1
+          fi
+          echo "[PASS] code-server is listening on :8443"
+
+          # Verify Renode is installed and executable in the digital-twin image.
+          # Override entrypoint to avoid bind-mount volume resolution issues.
+          echo "Checking Renode binary in digital-twin image..."
+          docker compose run --rm --no-deps \
+            --entrypoint /bin/bash \
+            digital-twin \
+            -c "renode --version && echo '[PASS] Renode is functional'"

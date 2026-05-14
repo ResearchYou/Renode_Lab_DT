@@ -46,11 +46,13 @@ RUN git clone --depth 1 --branch ${PICO_SDK_VERSION} \
 RUN git clone --depth 1 https://github.com/matgla/Renode_RP2040.git /opt/renode-rp2040
 
 # Create working directories
-RUN mkdir -p /workspace/firmware /workspace/build /workspace/output
+RUN mkdir -p /workspace/firmware /workspace/build /workspace/output /workspace/renode
 
 WORKDIR /workspace
 
 COPY docker/scripts/ /workspace/scripts/
+COPY renode/ /workspace/renode/
+COPY firmware/ /workspace/firmware/
 COPY --from=report-build /app/dist/index.html /workspace/scripts/report_template.html
 RUN chmod +x /workspace/scripts/*.sh
 

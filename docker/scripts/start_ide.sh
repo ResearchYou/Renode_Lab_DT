@@ -2,16 +2,36 @@
 set -euo pipefail
 
 CHALLENGE_ROOT="/home/coder/challenge"
+SEED_ROOT="/opt/challenge-seed"
 WORKSPACE_FILE="/home/coder/.config/code-server/challenge.code-workspace"
 
 # Create directories and fix ownership (running as root)
 mkdir -p "${CHALLENGE_ROOT}/firmware" \
          "${CHALLENGE_ROOT}/problem" \
+         "${CHALLENGE_ROOT}/output" \
          "$(dirname "${WORKSPACE_FILE}")"
 chown coder:coder "${CHALLENGE_ROOT}" \
-                  "${CHALLENGE_ROOT}/firmware" \
-                  "${CHALLENGE_ROOT}/problem" \
                   "$(dirname "${WORKSPACE_FILE}")"
+chown -R coder:coder "${CHALLENGE_ROOT}/firmware" \
+                     "${CHALLENGE_ROOT}/problem" \
+                     "${CHALLENGE_ROOT}/output" 2>/dev/null || true
+
+seed_if_empty() {
+    local source="$1"
+    local target="$2"
+
+    if [ ! -d "$source" ]; then
+        return
+    fi
+
+    if [ -z "$(find "$target" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+        cp -a "${source}/." "$target/"
+        chown -R coder:coder "$target" 2>/dev/null || true
+    fi
+}
+
+seed_if_empty "${SEED_ROOT}/firmware" "${CHALLENGE_ROOT}/firmware"
+seed_if_empty "${SEED_ROOT}/problem" "${CHALLENGE_ROOT}/problem"
 
 # Write workspace file
 cat > "${WORKSPACE_FILE}" <<'JSON'
