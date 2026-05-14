@@ -1,5 +1,6 @@
 services:
   digital-twin:
+    image: renode_dt-digital-twin:latest
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -7,16 +8,16 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
-    container_name: rp2040-digital-twin
+    userns_mode: host
     security_opt:
       - label:disable
     volumes:
-      - ./firmware:/workspace/firmware:ro,z
-      - ./renode:/workspace/renode:ro,z
-      - ./output:/workspace/output:z
+      - challenge-firmware:/workspace/firmware:ro
+      - challenge-output:/workspace/output
     entrypoint: ["/bin/bash", "/workspace/scripts/entrypoint.sh"]
 
   digital-twin-metrics:
+    image: renode_dt-digital-twin:latest
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -24,36 +25,37 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
-    container_name: rp2040-digital-twin-metrics
+    userns_mode: host
     security_opt:
       - label:disable
     volumes:
-      - ./firmware:/workspace/firmware:ro,z
-      - ./renode:/workspace/renode:ro,z
-      - ./output:/workspace/output:z
+      - challenge-firmware:/workspace/firmware:ro
+      - challenge-output:/workspace/output
     entrypoint: ["/bin/bash", "-c", "/workspace/scripts/build_firmware.sh && /workspace/scripts/run_metrics.sh"]
     profiles:
       - metrics
 
   ide:
+    image: renode_dt-ide:latest
     build:
       context: .
       dockerfile: docker/Dockerfile.ide
       network: host
-    container_name: challenge-ide
+    userns_mode: host
     security_opt:
       - label:disable
     ports:
-      - "8443:8080"
+      - "${IDE_PORT:-8443}:8080"
     environment:
-      - "HOST_PROJECT_DIR=${PWD}"
+      - "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-renode_dt}"
       - "RUNNER_SERVICE=digital-twin"
     volumes:
-      - ./firmware:/home/coder/challenge/firmware:z
-      - ./ide/problem:/home/coder/challenge/problem:z
-      - ./output:/home/coder/challenge/output:z
-      - ./docker-compose.yml:/home/coder/docker-compose.yml:ro,z
-      # The nested Docker Compose client runs inside the IDE container, so it
-      # must be able to read the same project path it passes to the host daemon.
-      - .:${PWD}:ro,z
+      - challenge-firmware:/home/coder/challenge/firmware
+      - challenge-problem:/home/coder/challenge/problem
+      - challenge-output:/home/coder/challenge/output
       - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock"
+
+volumes:
+  challenge-firmware:
+  challenge-problem:
+  challenge-output:
