@@ -1,6 +1,10 @@
 FROM codercom/code-server:4.95.3
 
 USER root
+RUN rm -f /etc/sudoers.d/nopasswd \
+    && SUDO_FORCE_REMOVE=yes apt-get purge -y --auto-remove sudo \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         clangd \
