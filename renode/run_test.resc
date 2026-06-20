@@ -18,7 +18,7 @@ sysbus.usart1 CreateFileBackend @/workspace/output/token_uart.txt true
 
 logLevel -1 sysbus.mockUsb
 
-echo "Starting STM32F4 mock HID security-token scenario..."
+echo "Starting STM32F4 HMAC-SHA1 functional validation scenario..."
 emulation RunFor "00:00:03"
 echo "Scenario complete"
 quit

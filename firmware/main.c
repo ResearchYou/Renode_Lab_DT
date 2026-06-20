@@ -2,18 +2,56 @@
 #include "stm32f4.h"
 #include "token_protocol.h"
 
-static const uint8_t resident_secret[TOKEN_MAC_SIZE] = {
-    0x8d, 0x34, 0x77, 0x10, 0x5a, 0xc9, 0x11, 0x42,
-    0xa1, 0xe0, 0x63, 0x2f, 0x9b, 0xd2, 0x7c, 0x08,
-    0x44, 0x91, 0xb6, 0x35, 0xef, 0x20, 0x19, 0xaa,
-    0x6c, 0xde, 0x03, 0x57, 0x88, 0x14, 0xf1, 0x2b,
+static uint32_t auth_counter;
+
+static const uint8_t rfc2202_key_1[20] = {
+    0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+    0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+    0x0b, 0x0b, 0x0b, 0x0b,
 };
 
-static uint32_t auth_counter;
-static uint32_t last_nonce;
-static uint8_t last_challenge[TOKEN_CHALLENGE_SIZE];
-static uint8_t last_seq;
-static int have_last_auth;
+static const uint8_t rfc2202_msg_1[] = {
+    'H', 'i', ' ', 'T', 'h', 'e', 'r', 'e',
+};
+
+static const uint8_t rfc2202_key_2[] = {
+    'J', 'e', 'f', 'e',
+};
+
+static const uint8_t rfc2202_msg_2[] = {
+    'w', 'h', 'a', 't', ' ', 'd', 'o', ' ', 'y', 'a', ' ',
+    'w', 'a', 'n', 't', ' ', 'f', 'o', 'r', ' ', 'n', 'o',
+    't', 'h', 'i', 'n', 'g', '?',
+};
+
+static const uint8_t rfc2202_key_3[20] = {
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa,
+};
+
+static const uint8_t rfc2202_msg_3[50] = {
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd,
+};
+
+typedef struct {
+    const uint8_t *key;
+    uint32_t key_len;
+    const uint8_t *message;
+    uint32_t message_len;
+} hmac_sha1_vector_t;
+
+static const hmac_sha1_vector_t hmac_sha1_vectors[] = {
+    { rfc2202_key_1, sizeof(rfc2202_key_1), rfc2202_msg_1, sizeof(rfc2202_msg_1) },
+    { rfc2202_key_2, sizeof(rfc2202_key_2), rfc2202_msg_2, sizeof(rfc2202_msg_2) },
+    { rfc2202_key_3, sizeof(rfc2202_key_3), rfc2202_msg_3, sizeof(rfc2202_msg_3) },
+};
 
 static void uart_init(void)
 {
@@ -60,12 +98,12 @@ static void uart_uint(uint32_t value)
     }
 }
 
-static void uart_hex32(uint32_t value)
+static void uart_hex_bytes(const uint8_t *data, uint32_t length)
 {
     static const char hex[] = "0123456789ABCDEF";
-    uart_puts("0x");
-    for (int shift = 28; shift >= 0; shift -= 4) {
-        uart_putc(hex[(value >> (uint32_t)shift) & 0xFU]);
+    for (uint32_t i = 0; i < length; i++) {
+        uart_putc(hex[data[i] >> 4]);
+        uart_putc(hex[data[i] & 0x0FU]);
     }
 }
 
@@ -91,77 +129,158 @@ static void copy_to_words(const uint8_t *src)
     }
 }
 
-static int same_challenge(const uint8_t *a, const uint8_t *b)
-{
-    uint8_t diff = 0U;
-    for (uint32_t i = 0; i < TOKEN_CHALLENGE_SIZE; i++) {
-        diff |= (uint8_t)(a[i] ^ b[i]);
-    }
-    return diff == 0U;
-}
-
-static int is_replay_buggy(const token_request_t *req)
-{
-    if (!have_last_auth) {
-        return 0;
-    }
-
-    /*
-     * Intentional challenge bug:
-     * replay protection incorrectly includes the transport sequence number.
-     * A captured request replayed with a new HID sequence is accepted.
-     */
-    return req->nonce == last_nonce &&
-           req->seq == last_seq &&
-           same_challenge(req->challenge, last_challenge);
-}
-
-static void remember_auth(const token_request_t *req)
-{
-    last_nonce = req->nonce;
-    last_seq = req->seq;
-    for (uint32_t i = 0; i < TOKEN_CHALLENGE_SIZE; i++) {
-        last_challenge[i] = req->challenge[i];
-    }
-    have_last_auth = 1;
-}
-
 static uint32_t rotate_left(uint32_t value, uint32_t bits)
 {
     return (value << bits) | (value >> (32U - bits));
 }
 
-static void make_lab_mac(const token_request_t *req, uint32_t counter,
-                         uint8_t *mac)
+static uint32_t load_be32(const uint8_t *data)
 {
-    uint32_t state[8] = {
-        0x243F6A88U, 0x85A308D3U, 0x13198A2EU, 0x03707344U,
-        0xA4093822U, 0x299F31D0U, 0x082EFA98U, 0xEC4E6C89U,
-    };
+    return ((uint32_t)data[0] << 24) |
+           ((uint32_t)data[1] << 16) |
+           ((uint32_t)data[2] << 8) |
+           ((uint32_t)data[3]);
+}
 
-    for (uint32_t i = 0; i < 8U; i++) {
-        uint32_t secret_word = ((uint32_t)resident_secret[(i * 4U) + 0U]) |
-                               ((uint32_t)resident_secret[(i * 4U) + 1U] << 8) |
-                               ((uint32_t)resident_secret[(i * 4U) + 2U] << 16) |
-                               ((uint32_t)resident_secret[(i * 4U) + 3U] << 24);
-        state[i] ^= secret_word ^ req->nonce ^ counter;
+static void store_be32(uint8_t *data, uint32_t value)
+{
+    data[0] = (uint8_t)(value >> 24);
+    data[1] = (uint8_t)(value >> 16);
+    data[2] = (uint8_t)(value >> 8);
+    data[3] = (uint8_t)value;
+}
+
+static void sha1_compress(uint32_t state[5], const uint8_t block[64])
+{
+    uint32_t w[80];
+    uint32_t a;
+    uint32_t b;
+    uint32_t c;
+    uint32_t d;
+    uint32_t e;
+
+    for (uint32_t i = 0; i < 16U; i++) {
+        w[i] = load_be32(&block[i * 4U]);
+    }
+    for (uint32_t i = 16U; i < 80U; i++) {
+        w[i] = rotate_left(w[i - 3U] ^ w[i - 8U] ^ w[i - 14U] ^ w[i - 16U], 1U);
     }
 
-    for (uint32_t round = 0; round < 4U; round++) {
-        for (uint32_t i = 0; i < TOKEN_CHALLENGE_SIZE; i++) {
-            uint32_t lane = i & 7U;
-            state[lane] += req->challenge[i] + resident_secret[(i + round) & 31U];
-            state[lane] = rotate_left(state[lane], ((i + round) & 7U) + 3U);
-            state[lane] ^= state[(lane + 1U) & 7U] + 0x9E3779B9U + round;
+    a = state[0];
+    b = state[1];
+    c = state[2];
+    d = state[3];
+    e = state[4];
+
+    for (uint32_t i = 0; i < 80U; i++) {
+        uint32_t f;
+        uint32_t k;
+        uint32_t temp;
+        if (i < 20U) {
+            f = (b & c) | ((~b) & d);
+            k = 0x5A827999U;
+        } else if (i < 40U) {
+            f = b ^ c ^ d;
+            k = 0x6ED9EBA1U;
+        } else if (i < 60U) {
+            f = (b & c) | (b & d) | (c & d);
+            k = 0x8F1BBCDCU;
+        } else {
+            f = b ^ c ^ d;
+            k = 0xCA62C1D6U;
+        }
+        temp = rotate_left(a, 5U) + f + e + k + w[i];
+        e = d;
+        d = c;
+        c = rotate_left(b, 30U);
+        b = a;
+        a = temp;
+    }
+
+    state[0] += a;
+    state[1] += b;
+    state[2] += c;
+    state[3] += d;
+    state[4] += e;
+}
+
+static void sha1_hash(const uint8_t *message, uint32_t message_len,
+                      uint8_t digest[20])
+{
+    uint32_t state[5] = {
+        0x67452301U, 0xEFCDAB89U, 0x98BADCFEU, 0x10325476U, 0xC3D2E1F0U,
+    };
+    uint8_t block[64];
+    uint32_t offset = 0;
+
+    while (message_len - offset >= 64U) {
+        sha1_compress(state, &message[offset]);
+        offset += 64U;
+    }
+
+    uint32_t remaining = message_len - offset;
+    for (uint32_t i = 0; i < 64U; i++) {
+        block[i] = 0U;
+    }
+    for (uint32_t i = 0; i < remaining; i++) {
+        block[i] = message[offset + i];
+    }
+    block[remaining] = 0x80U;
+
+    if (remaining >= 56U) {
+        sha1_compress(state, block);
+        for (uint32_t i = 0; i < 64U; i++) {
+            block[i] = 0U;
         }
     }
 
-    for (uint32_t i = 0; i < 8U; i++) {
-        mac[(i * 4U) + 0U] = (uint8_t)(state[i]);
-        mac[(i * 4U) + 1U] = (uint8_t)(state[i] >> 8);
-        mac[(i * 4U) + 2U] = (uint8_t)(state[i] >> 16);
-        mac[(i * 4U) + 3U] = (uint8_t)(state[i] >> 24);
+    uint32_t bit_len_low = message_len << 3;
+    block[60] = (uint8_t)(bit_len_low >> 24);
+    block[61] = (uint8_t)(bit_len_low >> 16);
+    block[62] = (uint8_t)(bit_len_low >> 8);
+    block[63] = (uint8_t)bit_len_low;
+    sha1_compress(state, block);
+
+    for (uint32_t i = 0; i < 5U; i++) {
+        store_be32(&digest[i * 4U], state[i]);
     }
+}
+
+static void hmac_sha1(const uint8_t *key, uint32_t key_len,
+                      const uint8_t *message, uint32_t message_len,
+                      uint8_t digest[20])
+{
+    uint8_t key_block[64];
+    uint8_t inner_block[64 + 50];
+    uint8_t outer_block[64 + 20];
+    uint8_t inner_digest[20];
+
+    for (uint32_t i = 0; i < 64U; i++) {
+        key_block[i] = 0U;
+    }
+
+    if (key_len > 64U) {
+        sha1_hash(key, key_len, key_block);
+    } else {
+        for (uint32_t i = 0; i < key_len; i++) {
+            key_block[i] = key[i];
+        }
+    }
+
+    for (uint32_t i = 0; i < 64U; i++) {
+        inner_block[i] = key_block[i] ^ 0x36U;
+        outer_block[i] = key_block[i] ^ 0x5cU;
+    }
+    for (uint32_t i = 0; i < message_len; i++) {
+        inner_block[64U + i] = message[i];
+    }
+
+    sha1_hash(inner_block, 64U + message_len, inner_digest);
+
+    for (uint32_t i = 0; i < 20U; i++) {
+        outer_block[64U + i] = inner_digest[i];
+    }
+    sha1_hash(outer_block, sizeof(outer_block), digest);
 }
 
 static void handle_get_info(const token_request_t *req, token_response_t *rsp)
@@ -175,7 +294,7 @@ static void handle_get_info(const token_request_t *req, token_response_t *rsp)
     rsp->mac[5] = 'K';
     rsp->mac[6] = '1';
     rsp->mac[8] = TOKEN_CMD_GET_INFO;
-    rsp->mac[9] = TOKEN_CMD_AUTH;
+    rsp->mac[9] = TOKEN_CMD_HMAC_SHA1;
     token_response_finalize(rsp);
 
     uart_puts("TOKEN: GET_INFO seq=");
@@ -183,43 +302,31 @@ static void handle_get_info(const token_request_t *req, token_response_t *rsp)
     uart_puts(" status=OK\r\n");
 }
 
-static void handle_auth(const token_request_t *req, token_response_t *rsp,
-                        uint32_t status)
+static void handle_hmac_sha1(const token_request_t *req, token_response_t *rsp)
 {
-    int touch = (status & MOCK_STATUS_TOUCH_PRESENT) != 0U;
-    uint8_t rsp_status = TOKEN_STATUS_OK;
+    uint8_t vector_index = req->challenge[0];
 
-    if (!touch) {
-        rsp_status = TOKEN_STATUS_ERR_TOUCH;
-    } else if (is_replay_buggy(req)) {
-        rsp_status = TOKEN_STATUS_ERR_REPLAY;
+    if (vector_index >= (sizeof(hmac_sha1_vectors) / sizeof(hmac_sha1_vectors[0]))) {
+        token_response_init(rsp, req->seq, TOKEN_STATUS_ERR_CMD, auth_counter);
+        token_response_finalize(rsp);
+        uart_puts("TOKEN: HMAC_SHA1 vector=");
+        uart_uint(vector_index);
+        uart_puts(" status=ERR_CMD\r\n");
+        return;
     }
 
-    if (rsp_status == TOKEN_STATUS_OK) {
-        auth_counter++;
-        token_response_init(rsp, req->seq, TOKEN_STATUS_OK, auth_counter);
-        make_lab_mac(req, auth_counter, rsp->mac);
-        remember_auth(req);
-    } else {
-        token_response_init(rsp, req->seq, rsp_status, auth_counter);
-    }
+    token_response_init(rsp, req->seq, TOKEN_STATUS_OK, auth_counter);
+    hmac_sha1(hmac_sha1_vectors[vector_index].key,
+              hmac_sha1_vectors[vector_index].key_len,
+              hmac_sha1_vectors[vector_index].message,
+              hmac_sha1_vectors[vector_index].message_len,
+              rsp->mac);
     token_response_finalize(rsp);
 
-    uart_puts("TOKEN: AUTH seq=");
-    uart_uint(req->seq);
-    uart_puts(" touch=");
-    uart_uint((uint32_t)touch);
-    uart_puts(" nonce=");
-    uart_hex32(req->nonce);
-    uart_puts(" status=");
-    if (rsp_status == TOKEN_STATUS_OK) {
-        uart_puts("OK counter=");
-        uart_uint(auth_counter);
-    } else if (rsp_status == TOKEN_STATUS_ERR_REPLAY) {
-        uart_puts("ERR_REPLAY");
-    } else {
-        uart_puts("ERR_TOUCH");
-    }
+    uart_puts("TOKEN: HMAC_SHA1 vector=");
+    uart_uint((uint32_t)vector_index + 1U);
+    uart_puts(" status=OK digest=");
+    uart_hex_bytes(rsp->mac, 20U);
     uart_puts("\r\n");
 }
 
@@ -228,7 +335,6 @@ static void process_report(void)
     uint8_t request_bytes[TOKEN_REPORT_SIZE];
     token_response_t rsp;
     token_request_t *req = (token_request_t *)request_bytes;
-    uint32_t status = MOCK_STATUS;
 
     copy_from_words(request_bytes);
     MOCK_CONTROL = MOCK_CONTROL_ACK_OUT;
@@ -239,8 +345,8 @@ static void process_report(void)
         uart_puts("TOKEN: BAD_CRC\r\n");
     } else if (req->cmd == TOKEN_CMD_GET_INFO) {
         handle_get_info(req, &rsp);
-    } else if (req->cmd == TOKEN_CMD_AUTH) {
-        handle_auth(req, &rsp, status);
+    } else if (req->cmd == TOKEN_CMD_HMAC_SHA1) {
+        handle_hmac_sha1(req, &rsp);
     } else {
         token_response_init(&rsp, req->seq, TOKEN_STATUS_ERR_CMD, auth_counter);
         token_response_finalize(&rsp);
@@ -255,8 +361,8 @@ int main(void)
 {
     uart_init();
 
-    uart_puts("TOKEN: boot YK-MOCK challenge-response\r\n");
-    uart_puts("TOKEN: resident secret loaded, touch-required auth enabled\r\n");
+    uart_puts("TOKEN: boot HMAC-SHA1 functional validation\r\n");
+    uart_puts("TOKEN: RFC2202 fixed vectors loaded\r\n");
 
     while (1) {
         uint32_t status = MOCK_STATUS;

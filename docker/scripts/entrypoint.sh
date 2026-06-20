@@ -2,7 +2,7 @@
 set -e
 
 echo "============================================"
-echo "  STM32F4 Mock HID Security Token Challenge"
+echo "  STM32F4 HMAC-SHA1 Functional Validation"
 echo "  Renode-based microcontroller emulation"
 echo "============================================"
 echo ""

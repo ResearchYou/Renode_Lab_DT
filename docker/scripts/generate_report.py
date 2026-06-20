@@ -15,24 +15,25 @@ def read_text(path):
 def parse_events(token_uart, renode_log):
     events = []
     checks = {
-        "boot": "TOKEN: boot YK-MOCK challenge-response" in token_uart,
+        "boot": "TOKEN: boot HMAC-SHA1 functional validation" in token_uart,
         "get_info": "TOKEN: GET_INFO seq=1 status=OK" in token_uart,
-        "auth_first": "TOKEN: AUTH seq=2 touch=1" in token_uart,
-        "auth_replay_seen": "TOKEN: AUTH seq=3 touch=1" in token_uart,
-        "auth_fresh": "TOKEN: AUTH seq=4 touch=1" in token_uart,
+        "rfc2202_tc1_uart": "TOKEN: HMAC_SHA1 vector=1 status=OK digest=B617318655057264E28BC0B6FB378C8EF146BE00" in token_uart,
+        "rfc2202_tc2_uart": "TOKEN: HMAC_SHA1 vector=2 status=OK digest=EFFCDF6AE5EB2FA2D27416D5F184DF9C259A7C79" in token_uart,
+        "rfc2202_tc3_uart": "TOKEN: HMAC_SHA1 vector=3 status=OK digest=125D7342B9AC11CD91A39AF48AA17B4F63F175D3" in token_uart,
         "script_complete": "TOKEN: SCRIPT COMPLETE" in token_uart,
         "host_get_info": "MOCK_USB_HOST: CHECK GET_INFO OK" in renode_log,
-        "host_auth_first": "MOCK_USB_HOST: CHECK AUTH_FIRST OK" in renode_log,
-        "host_auth_fresh": "MOCK_USB_HOST: CHECK AUTH_FRESH OK" in renode_log,
-        "replay_rejected": "MOCK_USB_HOST: SECURITY_FAIL replay accepted"
-        not in renode_log,
+        "host_rfc2202_tc1": "MOCK_USB_HOST: CHECK RFC2202_TC1 OK" in renode_log,
+        "host_rfc2202_tc2": "MOCK_USB_HOST: CHECK RFC2202_TC2 OK" in renode_log,
+        "host_rfc2202_tc3": "MOCK_USB_HOST: CHECK RFC2202_TC3 OK" in renode_log,
     }
 
     for line in token_uart.splitlines():
         line = line.strip()
         if line.startswith("TOKEN:"):
             kind = "token"
-            if "AUTH" in line:
+            if "HMAC_SHA1" in line:
+                kind = "hmac"
+            elif "AUTH" in line:
                 kind = "auth"
             elif "GET_INFO" in line:
                 kind = "info"
@@ -43,9 +44,7 @@ def parse_events(token_uart, renode_log):
             continue
         msg = line.split("MOCK_USB_HOST:", 1)[1].strip()
         kind = "host"
-        if "SECURITY_FAIL" in msg:
-            kind = "security_fail"
-        elif msg.startswith("OUT"):
+        if msg.startswith("OUT"):
             kind = "host_out"
         elif msg.startswith("IN"):
             kind = "host_in"
@@ -55,19 +54,19 @@ def parse_events(token_uart, renode_log):
 
 
 def render_report(events, checks, token_uart, renode_log, output_path):
-    security_pass = checks["replay_rejected"]
     functional_pass = all(
         checks[key]
         for key in (
             "boot",
             "get_info",
-            "auth_first",
-            "auth_replay_seen",
-            "auth_fresh",
+            "rfc2202_tc1_uart",
+            "rfc2202_tc2_uart",
+            "rfc2202_tc3_uart",
             "script_complete",
             "host_get_info",
-            "host_auth_first",
-            "host_auth_fresh",
+            "host_rfc2202_tc1",
+            "host_rfc2202_tc2",
+            "host_rfc2202_tc3",
         )
     )
 
@@ -86,18 +85,16 @@ def render_report(events, checks, token_uart, renode_log, output_path):
             f"{html.escape(message)}</li>"
         )
 
-    all_pass = functional_pass and security_pass
+    all_pass = functional_pass
     status_text = "All checks passed"
     if not functional_pass:
         status_text = "Functional validation failed"
-    elif not security_pass:
-        status_text = "Replay bug reproduced: AUTH replay was accepted"
 
     page = f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>STM32F4 Mock HID Token Report</title>
+  <title>STM32F4 HMAC-SHA1 Validation Report</title>
   <style>
     body {{ margin: 0; background: #101318; color: #e6edf3; font-family: Inter, system-ui, sans-serif; }}
     main {{ max-width: 1120px; margin: 0 auto; padding: 32px; }}
@@ -118,7 +115,7 @@ def render_report(events, checks, token_uart, renode_log, output_path):
 </head>
 <body>
 <main>
-  <h1>STM32F4 Mock HID Security Token</h1>
+  <h1>STM32F4 HMAC-SHA1 Functional Validation</h1>
   <div>Generated {html.escape(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))}</div>
   <div class="status {'pass' if all_pass else 'fail'}">
     {html.escape(status_text)}

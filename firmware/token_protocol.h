@@ -14,6 +14,7 @@
 
 #define TOKEN_CMD_GET_INFO      0x01U
 #define TOKEN_CMD_AUTH          0x02U
+#define TOKEN_CMD_HMAC_SHA1     0x03U
 
 #define TOKEN_STATUS_OK         0x00U
 #define TOKEN_STATUS_ERR_CRC    0x01U

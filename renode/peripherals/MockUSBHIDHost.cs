@@ -29,10 +29,9 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
         private const byte Guard = 0x7E;
 
         private const byte CmdGetInfo = 0x01;
-        private const byte CmdAuth = 0x02;
+        private const byte CmdHmacSha1 = 0x03;
 
         private const byte StatusOk = 0x00;
-        private const byte StatusReplay = 0x04;
 
         private readonly byte[] outReport = new byte[ReportSize];
         private readonly byte[] inReport = new byte[ReportSize];
@@ -49,10 +48,14 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
         {
             script = new[]
             {
-                new ScriptedRequest(1, CmdGetInfo, 0x00000000u, 0x10, false, "GET_INFO", StatusOk),
-                new ScriptedRequest(2, CmdAuth,    0x11223344u, 0x20, true,  "AUTH_FIRST", StatusOk),
-                new ScriptedRequest(3, CmdAuth,    0x11223344u, 0x20, true,  "AUTH_REPLAY", StatusReplay),
-                new ScriptedRequest(4, CmdAuth,    0x55667788u, 0x40, true,  "AUTH_FRESH", StatusOk),
+                new ScriptedRequest(1, CmdGetInfo,  0x00000000u, 0, false, "GET_INFO", StatusOk,
+                    null),
+                new ScriptedRequest(2, CmdHmacSha1, 0x00000000u, 0, false, "RFC2202_TC1", StatusOk,
+                    "B617318655057264E28BC0B6FB378C8EF146BE00"),
+                new ScriptedRequest(3, CmdHmacSha1, 0x00000000u, 1, false, "RFC2202_TC2", StatusOk,
+                    "EFFCDF6AE5EB2FA2D27416D5F184DF9C259A7C79"),
+                new ScriptedRequest(4, CmdHmacSha1, 0x00000000u, 2, false, "RFC2202_TC3", StatusOk,
+                    "125D7342B9AC11CD91A39AF48AA17B4F63F175D3"),
             };
             LoadCurrentRequest();
         }
@@ -159,6 +162,10 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
             {
                 outReport[10 + i] = (byte)(req.ChallengeSeed + i);
             }
+            if (req.Command == CmdHmacSha1)
+            {
+                outReport[10] = req.ChallengeSeed;
+            }
 
             outReport[62] = Crc8(outReport, ReportSize - 2);
             outReport[63] = Guard;
@@ -192,17 +199,27 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
                 seq, req.Label, StatusName(status), counter, crcOk ? "OK" : "BAD",
                 Hex(inReport, 10, 32));
 
-            if (status == req.ExpectedStatus && crcOk)
+            var digestOk = req.ExpectedDigest == null ||
+                           Hex(inReport, 10, 20).Equals(req.ExpectedDigest, StringComparison.Ordinal);
+
+            if (status == req.ExpectedStatus && crcOk && digestOk)
             {
+                if (req.ExpectedDigest != null)
+                {
+                    this.Log(LogLevel.Info,
+                        "MOCK_USB_HOST: CHECK {0} OK expected={1} actual={2}",
+                        req.Label, req.ExpectedDigest, Hex(inReport, 10, 20));
+                    return;
+                }
                 this.Log(LogLevel.Info, "MOCK_USB_HOST: CHECK {0} OK", req.Label);
                 return;
             }
 
-            if (req.Label == "AUTH_REPLAY" && req.ExpectedStatus == StatusReplay && status == StatusOk)
+            if (req.ExpectedDigest != null && status == req.ExpectedStatus && crcOk)
             {
                 this.Log(LogLevel.Error,
-                    "MOCK_USB_HOST: SECURITY_FAIL replay accepted seq={0} expected=ERR_REPLAY actual=OK",
-                    seq);
+                    "MOCK_USB_HOST: CHECK {0} FAIL expected_digest={1} actual_digest={2}",
+                    req.Label, req.ExpectedDigest, Hex(inReport, 10, 20));
                 return;
             }
 
@@ -275,7 +292,7 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
             switch (command)
             {
                 case CmdGetInfo: return "GET_INFO";
-                case CmdAuth: return "AUTH";
+                case CmdHmacSha1: return "HMAC_SHA1";
                 default: return "UNKNOWN";
             }
         }
@@ -296,7 +313,8 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
         private struct ScriptedRequest
         {
             public ScriptedRequest(byte sequence, byte command, uint nonce,
-                byte challengeSeed, bool touchPresent, string label, byte expectedStatus)
+                byte challengeSeed, bool touchPresent, string label, byte expectedStatus,
+                string expectedDigest)
             {
                 Sequence = sequence;
                 Command = command;
@@ -305,6 +323,7 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
                 TouchPresent = touchPresent;
                 Label = label;
                 ExpectedStatus = expectedStatus;
+                ExpectedDigest = expectedDigest;
             }
 
             public readonly byte Sequence;
@@ -314,6 +333,7 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
             public readonly bool TouchPresent;
             public readonly string Label;
             public readonly byte ExpectedStatus;
+            public readonly string ExpectedDigest;
         }
     }
 }

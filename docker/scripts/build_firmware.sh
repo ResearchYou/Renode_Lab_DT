@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Building STM32F4 mock HID token firmware ==="
+echo "=== Building STM32F4 HMAC-SHA1 validation firmware ==="
 
 SRC_DIR=/workspace/firmware
 BUILD_DIR=/workspace/build

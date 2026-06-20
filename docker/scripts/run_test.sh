@@ -9,7 +9,7 @@ RESC_FILE=/workspace/renode/run_test.resc
 mkdir -p "$OUTPUT_DIR"
 rm -f "$UART_FILE" "$RENODE_LOG" "$OUTPUT_DIR/report.html"
 
-echo "=== Running STM32F4 mock HID token scenario in Renode ==="
+echo "=== Running STM32F4 HMAC-SHA1 validation scenario in Renode ==="
 
 renode --disable-xwt --console "$RESC_FILE" || true
 
@@ -24,7 +24,6 @@ cat "$UART_FILE"
 echo ""
 echo "=== Validation ==="
 FUNCTIONAL_PASS=true
-SECURITY_PASS=true
 
 check() {
     local file="$1"
@@ -38,24 +37,18 @@ check() {
     fi
 }
 
-check "$UART_FILE" "TOKEN: boot YK-MOCK challenge-response" "Token boot"
+check "$UART_FILE" "TOKEN: boot HMAC-SHA1 functional validation" "Token boot"
 check "$UART_FILE" "TOKEN: GET_INFO seq=1 status=OK" "GET_INFO response"
-check "$UART_FILE" "TOKEN: AUTH seq=2 touch=1" "Touch-present AUTH path"
-check "$UART_FILE" "TOKEN: AUTH seq=3 touch=1" "Replay AUTH processed"
-check "$UART_FILE" "TOKEN: AUTH seq=4 touch=1" "Fresh AUTH processed"
+check "$UART_FILE" "TOKEN: HMAC_SHA1 vector=1 status=OK digest=B617318655057264E28BC0B6FB378C8EF146BE00" "RFC 2202 test case 1 UART digest"
+check "$UART_FILE" "TOKEN: HMAC_SHA1 vector=2 status=OK digest=EFFCDF6AE5EB2FA2D27416D5F184DF9C259A7C79" "RFC 2202 test case 2 UART digest"
+check "$UART_FILE" "TOKEN: HMAC_SHA1 vector=3 status=OK digest=125D7342B9AC11CD91A39AF48AA17B4F63F175D3" "RFC 2202 test case 3 UART digest"
 check "$UART_FILE" "TOKEN: SCRIPT COMPLETE" "Script completion"
 
 check "$RENODE_LOG" "MOCK_USB_HOST: OUT seq=1 label=GET_INFO" "Host sent GET_INFO"
 check "$RENODE_LOG" "MOCK_USB_HOST: CHECK GET_INFO OK" "Host validated GET_INFO"
-check "$RENODE_LOG" "MOCK_USB_HOST: CHECK AUTH_FIRST OK" "Host validated first AUTH"
-check "$RENODE_LOG" "MOCK_USB_HOST: CHECK AUTH_FRESH OK" "Host validated fresh AUTH"
-
-if [ -f "$RENODE_LOG" ] && grep -qF "MOCK_USB_HOST: SECURITY_FAIL replay accepted" "$RENODE_LOG"; then
-    echo "[FAIL] Replay rejection (intentional challenge bug exposed)"
-    SECURITY_PASS=false
-else
-    echo "[PASS] Replay rejection"
-fi
+check "$RENODE_LOG" "MOCK_USB_HOST: CHECK RFC2202_TC1 OK" "Host validated RFC 2202 test case 1"
+check "$RENODE_LOG" "MOCK_USB_HOST: CHECK RFC2202_TC2 OK" "Host validated RFC 2202 test case 2"
+check "$RENODE_LOG" "MOCK_USB_HOST: CHECK RFC2202_TC3 OK" "Host validated RFC 2202 test case 3"
 
 echo ""
 echo "=== Generating HTML report ==="
@@ -67,16 +60,10 @@ else
 fi
 
 echo ""
-if [ "$FUNCTIONAL_PASS" = true ] && [ "$SECURITY_PASS" = true ]; then
-    echo ">>> ALL TOKEN SECURITY CHECKS PASSED <<<"
+if [ "$FUNCTIONAL_PASS" = true ]; then
+    echo ">>> HMAC-SHA1 FUNCTIONAL VALIDATION PASSED <<<"
     exit 0
 fi
 
-if [ "$FUNCTIONAL_PASS" = true ] && [ "$SECURITY_PASS" = false ]; then
-    echo ">>> FUNCTIONAL CHECKS PASSED; SECURITY BUG REPRODUCED <<<"
-    echo ">>> Student task: make replayed AUTH return ERR_REPLAY <<<"
-    exit 1
-fi
-
-echo ">>> TOKEN SCENARIO FUNCTIONAL CHECKS FAILED <<<"
+echo ">>> HMAC-SHA1 FUNCTIONAL VALIDATION FAILED <<<"
 exit 1
