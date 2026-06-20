@@ -12,6 +12,8 @@ add_executable(firmware main.c)
 
 target_link_libraries(firmware
     pico_stdlib
+    hardware_i2c
+    hardware_timer
 )
 
 # Route stdio to UART (not USB) for Renode compatibility

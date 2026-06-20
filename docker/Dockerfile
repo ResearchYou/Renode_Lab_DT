@@ -42,8 +42,17 @@ RUN git clone --depth 1 --branch ${PICO_SDK_VERSION} \
     && cd ${PICO_SDK_PATH} \
     && git submodule update --init --depth 1
 
-# Clone community RP2040 Renode support
-RUN git clone --depth 1 https://github.com/matgla/Renode_RP2040.git /opt/renode-rp2040
+# Clone community RP2040 Renode support and use source compilation
+# (the repo does not ship precompiled DLLs compatible with every Renode build).
+RUN git clone --depth 1 https://github.com/matgla/Renode_RP2040.git /opt/renode-rp2040 \
+    && sed -i 's|initialize_peripherals\.resc|initialize_peripherals_source.resc|' \
+        /opt/renode-rp2040/boards/initialize_custom_board.resc \
+    && find /opt/renode-rp2040/emulation -name '*.cs' -exec \
+        sed -i \
+            -e 's/LimitTimer(machine\.ClockSource, Frequency,/LimitTimer(machine.ClockSource, (long)Frequency,/g' \
+            -e 's/timer\.Frequency = (ulong)/timer.Frequency = (long)/g' \
+            -e 's/limit: 0xffffffffffffffff/limit: (long)0x7fffffffffffffff/g' \
+        {} +
 
 # Create working directories
 RUN mkdir -p /workspace/firmware /workspace/build /workspace/output /workspace/renode

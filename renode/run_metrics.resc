@@ -1,9 +1,12 @@
-# Renode script for RP2040 Digital Twin — with metrics collection (Option D)
-# Enables the built-in metrics analyzer to capture CPU execution data.
+# Renode script for RP2040 sensor filtering lab with metrics collection.
 
 path add @/opt/renode-rp2040
 
+include @/workspace/renode/peripherals/VirtualSensorStream.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.I2C.VirtualSensorStream"
+
 include @boards/initialize_raspberry_pico.resc
+machine LoadPlatformDescription @/workspace/renode/sensor_i2c.repl
 
 sysbus LoadELF @/workspace/build/firmware.elf
 
@@ -13,15 +16,13 @@ sysbus.cpu1 VectorTableOffset 0x00000000
 # Capture UART to file as usual
 sysbus.uart0 CreateFileBackend @/workspace/output/uart_output.txt true
 
-# Log SIO peripheral accesses (GPIO ground truth)
 logFile @/workspace/output/renode.log true
-sysbus LogPeripheralAccess sysbus.sio
 
 # Enable built-in metrics collection
 machine EnableMetrics @/workspace/output/metrics.bin
 
-# Run for 15 virtual seconds
-emulation RunFor "00:00:15"
+# Run for five virtual seconds.
+emulation RunFor "00:00:05"
 
 echo "Emulation finished — metrics written to /workspace/output/metrics.bin"
 quit

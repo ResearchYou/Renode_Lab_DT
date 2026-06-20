@@ -1,10 +1,15 @@
-# Renode script for RP2040 Digital Twin POC
-# Uses community RP2040 support (matgla/Renode_RP2040)
+# Renode script: RP2040 virtual sensor filtering lab.
 
 path add @/opt/renode-rp2040
 
+include @/workspace/renode/peripherals/VirtualSensorStream.cs
+EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.I2C.VirtualSensorStream"
+
 # Initialize the Raspberry Pi Pico board (loads platform + boot ROM)
 include @boards/initialize_raspberry_pico.resc
+
+# Attach the virtual I2C sensor to the Pico.
+machine LoadPlatformDescription @/workspace/renode/sensor_i2c.repl
 
 # Load the compiled firmware
 sysbus LoadELF @/workspace/build/firmware.elf
@@ -19,11 +24,8 @@ sysbus.uart0 CreateFileBackend @/workspace/output/uart_output.txt true
 # Enable Renode log file — captures peripheral access traces
 logFile @/workspace/output/renode.log true
 
-# Log all register-level reads/writes to the SIO peripheral (GPIO control)
-sysbus LogPeripheralAccess sysbus.sio
-
-# Run for 15 virtual seconds then stop
-emulation RunFor "00:00:15"
+# Run long enough for all deterministic samples to be consumed.
+emulation RunFor "00:00:05"
 
 echo "Emulation finished"
 quit

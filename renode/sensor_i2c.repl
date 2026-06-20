@@ -1,0 +1,7 @@
+// Virtual stream sensor connected to Raspberry Pi Pico I2C0.
+//
+// Firmware protocol:
+//   write 0x00, then read 4 bytes:
+//   seq:uint16_be, value:int16_be
+
+sensor: I2C.VirtualSensorStream @ i2c0 0x52

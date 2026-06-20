@@ -2,7 +2,7 @@
 set -e
 
 echo "============================================"
-echo "  RP2040 Digital Twin POC"
+echo "  RP2040 Sensor Filter TinyML Lab"
 echo "  Renode-based microcontroller emulation"
 echo "============================================"
 echo ""

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Building RP2040 firmware ==="
+echo "=== Building RP2040 sensor-filter firmware ==="
 
 BUILD_DIR=/workspace/build
 FIRMWARE_DIR=/workspace/firmware

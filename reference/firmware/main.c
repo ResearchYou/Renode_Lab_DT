@@ -60,35 +60,26 @@ static bool sensor_read_next(sensor_sample_t *sample)
 
 static bool threshold_filter_should_keep(int16_t value, int16_t previous_kept)
 {
-    /*
-     * TODO 1:
-     * Keep values inside THRESHOLD_MIN_VALUE..THRESHOLD_MAX_VALUE and reject
-     * samples whose absolute jump from previous_kept is larger than
-     * THRESHOLD_MAX_JUMP.
-     */
-    (void)value;
-    (void)previous_kept;
-    return true;
+    if (value < THRESHOLD_MIN_VALUE || value > THRESHOLD_MAX_VALUE) {
+        return false;
+    }
+    return abs_i32(value - previous_kept) <= THRESHOLD_MAX_JUMP;
 }
 
 static int32_t model_filter_score(int16_t value, int16_t previous_kept)
 {
-    /*
-     * TODO 2:
-     * Implement the fixed-point linear model described in model_weights.h.
-     * Use absolute distance from MODEL_CENTER_VALUE and absolute jump from
-     * previous_kept as the two input features.
-     */
-    (void)value;
-    (void)previous_kept;
-    return 0;
+    int32_t abs_center = abs_i32(value - MODEL_CENTER_VALUE);
+    int32_t abs_jump = abs_i32(value - previous_kept);
+    return MODEL_BIAS_Q0 +
+           (MODEL_WEIGHT_ABS_CENTER_Q0 * abs_center) +
+           (MODEL_WEIGHT_ABS_JUMP_Q0 * abs_jump);
 }
 
 static bool model_filter_should_keep(int16_t value, int16_t previous_kept,
                                      int32_t *score)
 {
     *score = model_filter_score(value, previous_kept);
-    return true;
+    return *score >= MODEL_KEEP_THRESHOLD_Q0;
 }
 
 int main(void)

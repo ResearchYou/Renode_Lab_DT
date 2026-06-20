@@ -55,6 +55,9 @@ detect_socket() {
 DOCKER_SOCKET_PATH="$(detect_socket)"
 export DOCKER_SOCKET_PATH
 
+DOCKER_HOST="${DOCKER_HOST:-unix://$DOCKER_SOCKET_PATH}"
+export DOCKER_HOST
+
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-renode_dt}"
 export COMPOSE_PROJECT_NAME
 
@@ -62,6 +65,7 @@ IDE_PORT="${IDE_PORT:-8443}"
 export IDE_PORT
 
 echo "run.sh: Docker socket → $DOCKER_SOCKET_PATH"
+echo "run.sh: Docker host → $DOCKER_HOST"
 echo "run.sh: Compose project → $COMPOSE_PROJECT_NAME"
 echo "run.sh: IDE port → $IDE_PORT"
 exec docker compose "$@"
