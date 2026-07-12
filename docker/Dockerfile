@@ -1,68 +1,84 @@
-# ── Stage 1: Build Vue report template ──
-FROM node:20-alpine AS report-build
-WORKDIR /app
-COPY report-app/package.json report-app/package-lock.json ./
-RUN npm ci
-COPY report-app/ .
-RUN npm run build
+FROM docker.io/library/ubuntu:24.04
 
-# ── Stage 2: Digital twin runtime ──
-FROM ubuntu:24.04
-
-ARG RENODE_VERSION=1.15.3
-ARG PICO_SDK_VERSION=1.5.1
+ARG RENODE_VERSION=1.16.1
+ARG ZEPHYR_VERSION=v4.4.1
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV PICO_SDK_PATH=/opt/pico-sdk
-ENV PATH="/opt/renode:${PATH}"
+ENV ZEPHYR_BASE=/opt/zephyrproject/zephyr
+ENV ZEPHYR_TOOLCHAIN_VARIANT=zephyr
+ENV ZEPHYR_SDK_INSTALL_DIR=/opt/zephyr-sdk
+ENV PATH="/opt/zephyr-venv/bin:/opt/renode:${PATH}"
 
-# Install build dependencies
+# Ubuntu dependencies follow Zephyr's 24.04 host requirements. The runtime
+# also keeps a native compiler for the fast protocol known-answer tests.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc-arm-none-eabi \
-    libnewlib-arm-none-eabi \
-    libstdc++-arm-none-eabi-newlib \
-    cmake \
-    build-essential \
-    git \
-    python3 \
-    python3-matplotlib \
-    wget \
+    bash \
     ca-certificates \
+    ccache \
+    cmake \
+    curl \
+    device-tree-compiler \
+    file \
+    gcc \
+    gcc-multilib \
+    g++-multilib \
+    git \
+    gperf \
+    libmagic1 \
+    make \
+    ninja-build \
+    python3 \
+    python3-dev \
+    python3-pip \
+    python3-setuptools \
+    python3-venv \
+    python3-wheel \
+    wget \
+    xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Renode portable (includes its own Mono runtime)
-RUN wget -q https://github.com/renode/renode/releases/download/v${RENODE_VERSION}/renode-${RENODE_VERSION}.linux-portable.tar.gz \
+# Stable Renode release. The bundled nRF52840 model and BLEMedium are used
+# directly; no community board fork is needed for this scenario.
+RUN wget -q \
+      "https://github.com/renode/renode/releases/download/v${RENODE_VERSION}/renode-${RENODE_VERSION}.linux-portable.tar.gz" \
+      -O /tmp/renode.tar.gz \
     && mkdir -p /opt/renode \
-    && tar xzf renode-${RENODE_VERSION}.linux-portable.tar.gz -C /opt/renode --strip-components=1 \
-    && rm renode-${RENODE_VERSION}.linux-portable.tar.gz
+    && tar xzf /tmp/renode.tar.gz -C /opt/renode --strip-components=1 \
+    && rm /tmp/renode.tar.gz \
+    && renode --version
 
-# Clone Pico SDK
-RUN git clone --depth 1 --branch ${PICO_SDK_VERSION} \
-    https://github.com/raspberrypi/pico-sdk.git ${PICO_SDK_PATH} \
-    && cd ${PICO_SDK_PATH} \
-    && git submodule update --init --depth 1
+# Pin a shallow Zephyr manifest checkout, then fetch only the three modules used
+# by an nRF52840 BLE build. `west update --narrow` fetches the pinned revisions
+# without every remote branch and tag. Base requirements are sufficient for
+# building and for the SDK installer; test, flashing, and compliance packages
+# would add hundreds of unrelated tools to the runtime image.
+RUN python3 -m venv /opt/zephyr-venv \
+    && pip install --no-cache-dir west \
+    && mkdir -p /opt/zephyrproject \
+    && git clone --depth 1 --branch "${ZEPHYR_VERSION}" \
+         https://github.com/zephyrproject-rtos/zephyr \
+         /opt/zephyrproject/zephyr \
+    && west init -l /opt/zephyrproject/zephyr \
+    && cd /opt/zephyrproject \
+    && west update --narrow cmsis cmsis_6 hal_nordic \
+    && west zephyr-export \
+    && pip install --no-cache-dir \
+         -r /opt/zephyrproject/zephyr/scripts/requirements-base.txt \
+    && cd /opt/zephyrproject/zephyr \
+    && west sdk install --install-dir /opt/zephyr-sdk \
+         --gnu-toolchains arm-zephyr-eabi
 
-# Clone community RP2040 Renode support and use source compilation
-# (the repo does not ship precompiled DLLs compatible with every Renode build).
-RUN git clone --depth 1 https://github.com/matgla/Renode_RP2040.git /opt/renode-rp2040 \
-    && sed -i 's|initialize_peripherals\.resc|initialize_peripherals_source.resc|' \
-        /opt/renode-rp2040/boards/initialize_custom_board.resc \
-    && find /opt/renode-rp2040/emulation -name '*.cs' -exec \
-        sed -i \
-            -e 's/LimitTimer(machine\.ClockSource, Frequency,/LimitTimer(machine.ClockSource, (long)Frequency,/g' \
-            -e 's/timer\.Frequency = (ulong)/timer.Frequency = (long)/g' \
-            -e 's/limit: 0xffffffffffffffff/limit: (long)0x7fffffffffffffff/g' \
-        {} +
-
-# Create working directories
-RUN mkdir -p /workspace/firmware /workspace/build /workspace/output /workspace/renode
+RUN mkdir -p /workspace/build /workspace/output /workspace/firmware \
+    /workspace/firmware_seed /workspace/problem_seed /workspace/support \
+    /workspace/reference /workspace/renode
 
 WORKDIR /workspace
 
 COPY docker/scripts/ /workspace/scripts/
-COPY renode/ /workspace/renode/
-COPY firmware/ /workspace/firmware/
-COPY --from=report-build /app/dist/index.html /workspace/scripts/report_template.html
-RUN chmod +x /workspace/scripts/*.sh
+COPY firmware/ /workspace/firmware_seed/
+COPY ide/problem/ /workspace/problem_seed/
+COPY support/ /workspace/support/
+COPY reference/ /workspace/reference/
+RUN chmod +x /workspace/scripts/*.sh /workspace/scripts/*.py
 
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/bin/bash", "/workspace/scripts/entrypoint.sh"]

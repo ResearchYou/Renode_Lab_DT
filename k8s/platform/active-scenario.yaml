@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: active-scenario
+  namespace: challenge-platform
+data:
+  tag: nrf52840-swarm-ghosttag-apocalypse
+  digitalTwinImagePrefix: oci.cyb3rhell.com/challenge-platform/digital-twin
+  firmwareSeedPath: /workspace/firmware_seed
+  problemSeedPath: /workspace/problem_seed

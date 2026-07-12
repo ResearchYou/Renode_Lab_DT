@@ -1,96 +1,43 @@
-# Renode Primer for This Lab
+# Renode Primer for GhostTag
 
-This document explains the Renode files used in the lab. It is intentionally
-scoped to the workflow students see here.
+GhostTag uses only capabilities shipped in stable Renode 1.16.1.
 
-## RESC Files
+## Machines and board model
 
-`.resc` files are Renode monitor scripts. They automate what an instructor could
-type manually in the Renode monitor.
+Every tag and gateway is a separate Renode machine loaded from
+`platforms/cpus/nrf52840.repl`. The platform includes the Cortex-M4 CPU, flash,
+RAM, UART, timers, RNG, ECB block, and `NRF52840_Radio` peripheral.
 
-In this lab, `renode/run_test.resc` does five jobs:
+## BLE medium
 
-- Loads the custom C# sensor model.
-- Creates a Raspberry Pi Pico machine.
-- Applies the sensor wiring overlay.
-- Loads `firmware.elf`.
-- Captures UART output and runs the emulation.
-
-Useful commands in this scenario:
+The generated script creates one medium per sector:
 
 ```resc
-include @/workspace/renode/peripherals/VirtualSensorStream.cs
-EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.I2C.VirtualSensorStream"
-include @boards/initialize_raspberry_pico.resc
-machine LoadPlatformDescription @/workspace/renode/sensor_i2c.repl
-sysbus LoadELF @/workspace/build/firmware.elf
-sysbus.uart0 CreateFileBackend @/workspace/output/uart_output.txt true
-emulation RunFor "00:00:05"
+emulation CreateBLEMedium "ghostAir"
+ghostAir SetRangeWirelessFunction 92
+emulation SetGlobalQuantum "0.00001"
 ```
 
-## REPL Files
+Each radio is connected and positioned in 3D:
 
-`.repl` files describe platform topology: which peripherals exist and where
-they connect.
-
-This lab uses a small overlay instead of redefining the whole Pico:
-
-```repl
-sensor: I2C.VirtualSensorStream @ i2c0 0x52
+```resc
+connector Connect radio ghostAir
+ghostAir SetPosition radio 60 40 3
 ```
 
-Read it as:
+The 10 microsecond global quantum is the value used by Renode's official
+nRF52840 Zephyr BLE multi-node example. The range function makes topology
+matter while remaining deterministic.
 
-- Create an instance named `sensor`.
-- Its Renode type is `I2C.VirtualSensorStream`.
-- Attach it to bus `i2c0`.
-- Use I2C address `0x52`.
+## Provisioning without source variants
 
-## Custom Components
+All tags run the same ELF. The harness gives each machine a unique BLE FICR
+address and writes a seed/config record into the final nRF52840 flash page at
+`0x000FF000`. That page is outside the application image. This makes one build
+scale to dozens of distinct devices without compiling per-tag binaries.
 
-`VirtualSensorStream.cs` is a minimal Renode I2C peripheral. It models the
-contract the firmware needs:
+## Evidence
 
-- Firmware writes register `0x00`.
-- Firmware reads four bytes.
-- The sensor returns `seq:uint16_be` and `value:int16_be`.
-- Each complete frame advances to the next deterministic sample.
-
-The component is intentionally not a full real-world sensor. For a lab, the
-important part is deterministic behavior that students can reason about.
-
-## Virtual Wiring
-
-The virtual wiring path is:
-
-```text
-run_test.resc
-  loads VirtualSensorStream.cs
-  initializes Raspberry Pi Pico
-  applies sensor_i2c.repl
-
-sensor_i2c.repl
-  connects VirtualSensorStream to i2c0 address 0x52
-
-firmware/main.c
-  initializes i2c0 on GP4/GP5
-  writes register 0x00
-  reads 4-byte sample frames
-```
-
-If any part of this chain is wrong, the firmware still builds, but UART output
-will show failed sensor reads or incorrect samples.
-
-## Validation Surface
-
-The harness does not inspect C variables directly. It validates behavior through
-UART lines:
-
-- `SAMPLE seq=... value=...`
-- `THRESHOLD seq=... decision=...`
-- `MODEL seq=... decision=... score=...`
-- `DISAGREE seq=...`
-- `SUMMARY ...`
-
-This keeps the digital twin close to a real board workflow: the observable
-surface is serial output plus emulator logs.
+Only gateway UARTs are authoritative for the fleet pass. Renode file backends
+capture `GHOST_SIGHT`, `GHOST_ROGUE`, and `GHOST_SUMMARY` lines. One sample tag
+UART is retained for debugging rotation failures.

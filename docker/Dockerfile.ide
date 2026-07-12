@@ -1,4 +1,4 @@
-FROM codercom/code-server:4.95.3
+FROM docker.io/codercom/code-server:4.128.0
 
 USER root
 RUN rm -f /etc/sudoers.d/nopasswd \
@@ -7,20 +7,17 @@ RUN rm -f /etc/sudoers.d/nopasswd \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        clangd \
-        clang \
-        gcc-arm-none-eabi \
-        libnewlib-arm-none-eabi \
-        libstdc++-arm-none-eabi-newlib \
-        cmake \
-        make \
-        python3 \
-        git \
         ca-certificates \
-        nginx \
-        docker.io \
+        clang \
+        clangd \
         curl \
-    && curl -SL "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose \
+        docker.io \
+        git \
+        nginx \
+        python3 \
+    && curl -fsSL \
+        "https://github.com/docker/compose/releases/download/v5.3.1/docker-compose-linux-x86_64" \
+        -o /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose \
     && rm -rf /var/lib/apt/lists/*
 
@@ -34,18 +31,17 @@ COPY --chown=coder:coder ide/code-server/User/keybindings.json /home/coder/.loca
 
 USER root
 COPY docker/scripts/start_ide.sh /usr/local/bin/start_ide.sh
-COPY ide/runner.py                /usr/local/bin/runner.py
+COPY ide/runner.py /usr/local/bin/runner.py
 RUN chmod +x /usr/local/bin/start_ide.sh /usr/local/bin/runner.py
 
 COPY docker-compose.yml /home/coder/docker-compose.yml
 COPY --chown=coder:coder firmware/ /opt/challenge-seed/firmware/
 COPY --chown=coder:coder ide/problem/ /opt/challenge-seed/problem/
 RUN mkdir -p /home/coder/challenge/output \
-    && chown -R coder:coder /home/coder/challenge /home/coder/docker-compose.yml /opt/challenge-seed
+    && chown -R coder:coder /home/coder/challenge \
+       /home/coder/docker-compose.yml /opt/challenge-seed
 
-COPY --chown=coder:coder ide/panel/      /home/coder/panel/
-COPY --chown=coder:coder ide/nginx.conf  /home/coder/nginx.conf
+COPY --chown=coder:coder ide/panel/ /home/coder/panel/
+COPY --chown=coder:coder ide/nginx.conf /home/coder/nginx.conf
 
-# Entrypoint runs as root so the runner can reach the Docker socket;
-# code-server is exec'd as coder inside the script.
 ENTRYPOINT ["/usr/local/bin/start_ide.sh"]

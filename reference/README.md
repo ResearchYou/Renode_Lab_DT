@@ -1,41 +1,23 @@
-# Reference Implementation
+# GhostTag reference implementation
 
-This directory contains the completed firmware implementation for the RP2040
-sensor filtering lab.
+`reference/firmware/` is a complete drop-in replacement for the participant
+firmware seed. It implements canonical SipHash-2-4, domain-separated ephemeral
+IDs and MACs, constant-time payload comparison, and the same Zephyr broadcaster
+as the starter.
 
-The student TODO variant remains in:
-
-```text
-firmware/main.c
-```
-
-The reference implementation is:
-
-```text
-reference/firmware/main.c
-```
-
-It is a drop-in replacement for the student starter. It intentionally reuses the
-same project configuration and `firmware/model_weights.h` so there is only one
-set of build settings and one set of model constants.
-
-## Validate the Reference
-
-From the repository root:
+Validate it without modifying the participant tree:
 
 ```bash
-sg docker -c 'DOCKER_HOST=unix:///var/run/docker.sock docker run --rm --entrypoint /bin/bash \
-  -v "$PWD":/host:ro renode_dt-digital-twin:latest \
-  -lc "cp /host/reference/firmware/main.c /workspace/firmware/main.c && /workspace/scripts/entrypoint.sh"'
+mkdir -p output
+podman run --rm \
+  -e TAG_COUNT=6 -e SIMULATION_SECONDS=6 \
+  -v "$PWD/reference/firmware:/workspace/firmware:ro,Z" \
+  -v "$PWD/output:/workspace/output:Z" \
+  renode_dt-digital-twin:nrf52840-swarm-ghosttag-apocalypse
 ```
 
-If your current shell already has Docker group membership, omit `sg docker -c`.
-Keep the `DOCKER_HOST=unix:///var/run/docker.sock` prefix if your environment
-points Docker at a stale rootless socket.
-
-Expected result:
+The authoritative end marker is:
 
 ```text
-SUMMARY threshold_keep=8 threshold_drop=2 model_keep=6 model_drop=4 disagreements=2
->>> ALL CHECKS PASSED - sensor filters behave as expected <<<
+>>> GHOSTTAG FLEET SURVIVED THE APOCALYPSE <<<
 ```

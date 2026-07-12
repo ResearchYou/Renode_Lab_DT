@@ -145,7 +145,7 @@ detect_scenario_tag() {
     if [ -n "$detected" ]; then
         printf '%s\n' "$detected"
     else
-        printf '%s\n' "rp2040-hello-world"
+        printf '%s\n' "nrf52840-swarm-ghosttag-apocalypse"
     fi
 }
 

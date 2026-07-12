@@ -1,16 +1,15 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "============================================"
-echo "  RP2040 Sensor Filter TinyML Lab"
-echo "  Renode-based microcontroller emulation"
-echo "============================================"
-echo ""
+export SECTOR_INDEX="${SECTOR_INDEX:-${JOB_COMPLETION_INDEX:-0}}"
 
-# Step 1: Build firmware
+echo "======================================================"
+echo "  GHOSTTAG APOCALYPSE // OFFLINE FIND-MESH HACKATHON"
+echo "  nRF52840 + Zephyr + Renode + Kubernetes"
+echo "======================================================"
+echo "sector=$SECTOR_INDEX tags=${TAG_COUNT:-12} gateways=${GATEWAY_COUNT:-3}"
+echo
+
 /workspace/scripts/build_firmware.sh
-
-echo ""
-
-# Step 2: Run in Renode and validate
+echo
 /workspace/scripts/run_test.sh

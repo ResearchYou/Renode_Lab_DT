@@ -1,83 +1,84 @@
-# Lab: Renode RP2040 Sensor Filtering
+# GhostTag Apocalypse: build AirTag for the end of the Internet
 
-## Scenario
+The phones are dead. GPS is jammed. The cloud region is now a crater. There are
+still hundreds of battery-powered tags and a handful of BLE rescue gateways.
+Your job is to make the tags findable without broadcasting a permanent identity
+that turns every survivor into a tracking target.
 
-You are working with a Raspberry Pi Pico firmware project in a Renode digital
-twin. Renode provides a virtual I2C sensor, so no physical board or sensor is
-needed.
+## The swarm you are coding for
 
-```
-[Virtual I2C sensor @ 0x52] -> sample stream -> [RP2040 firmware]
-```
-
-Each sample contains:
-
-- `seq`: sample number
-- `value`: signed sensor reading
-
-The firmware must classify each sample with two filters:
-
-- **Threshold filter**: hand-written `if`/`else` logic using min, max, and
-  maximum jump thresholds.
-- **TinyML filter**: a small fixed-point linear model using weights shipped in
-  `firmware/model_weights.h`.
-
-## Your Task
-
-Edit `firmware/main.c` and complete:
-
-- `threshold_filter_should_keep`
-- `model_filter_score`
-- `model_filter_should_keep`
-
-Use the constants already defined in `firmware/main.c` and
-`firmware/model_weights.h`. Do not change the UART line formats; the validation
-harness reads those lines.
-
-The target behavior is:
-
-- Threshold filter catches the gross high and low outliers.
-- TinyML filter also rejects two borderline jump samples.
-- The final summary line is:
+One test run boots a complete Renode city sector:
 
 ```text
-SUMMARY threshold_keep=8 threshold_drop=2 model_keep=6 model_drop=4 disagreements=2
+participant nRF52840 tags -- BLE advertisements --> observer nRF52840 gateways
+            |                                          |
+            +-- rotating private IDs                   +-- authorized fleet search
+            +-- authenticated packets                  +-- clone rejection
+            +-- no stable ID on air                    +-- multi-gateway coverage
 ```
 
-## Important Files
+The normal IDE run uses 12 tags, three gateways, and two rogue clones. The
+cluster spectacle runs 12 indexed sectors containing 252 emulated nRF52840
+boards in total.
 
-- `firmware/main.c` — student TODOs.
-- `firmware/model_weights.h` — fixed-point model constants.
-- `renode/run_test.resc` — Renode script that boots the Pico and attaches the
-  sensor.
-- `renode/sensor_i2c.repl` — virtual wiring overlay.
-- `renode/peripherals/VirtualSensorStream.cs` — deterministic sensor model.
+## Packet contract
 
-## Running Tests
+Your 28-byte manufacturer payload is fixed:
 
-From the IDE, press **Run** in the side panel.
+| Bytes | Meaning |
+|---|---|
+| 0..1 | GhostTag company ID `0xF00D` |
+| 2 | protocol version `2` |
+| 3 | flags |
+| 4..7 | rotation epoch, little-endian |
+| 8..11 | public city sector, little-endian |
+| 12..19 | keyed ephemeral ID |
+| 20..27 | keyed authentication tag over bytes 0..19 |
 
-From a shell:
+There is deliberately no stable tag ID in the packet. A trusted gateway tests
+the small authorized fleet keyspace to recover which tag sent a valid sighting.
+That is expensive in exactly the fun way: the cluster spends CPU so the radio
+packet can remain private and tiny.
 
-```bash
-./run.sh up digital-twin
+## Your three TODOs
+
+Edit only `firmware/ghost_protocol.c`:
+
+1. `ghost_siphash24`: implement canonical SipHash-2-4 with a 128-bit key,
+   64-bit output, and little-endian message words.
+2. `ghost_build_payload`: derive the ephemeral ID from domain byte `0x45`, the
+   epoch, and sector; derive the authentication tag with a distinct MAC key
+   domain; never copy `device_seed` into the packet.
+3. `ghost_verify_payload`: reject bad headers, wrong IDs, wrong authentication
+   tags, tampering, and the wrong device seed.
+
+Do not change the packet size, company ID, version, epoch duration, UART line
+formats, CMake files, or gateway code. Those are the digital-twin contract.
+
+## What attacks your implementation
+
+- canonical SipHash known-answer vectors;
+- bit flips in authenticated flags;
+- a wrong fleet seed;
+- stable-seed leakage scanning;
+- multiple epochs, which must produce different radio IDs;
+- real Zephyr builds for `nrf52840dk/nrf52840`;
+- many concurrent nRF52840 machines on a range-limited BLE medium;
+- unregistered devices sending correctly shaped clone traffic.
+
+## Passing evidence
+
+A pass ends with output similar to:
+
+```text
+[PASS] SipHash known-answer and tamper suite: exit=0
+[PASS] all observer gateways boot: ready=3/3
+[PASS] entire authorized fleet is discoverable: all tags seen
+[PASS] every stable identity rotates on air: all tags rotated
+[PASS] unregistered clone traffic is rejected: rogue_packets=...
+[PASS] no firmware fatal errors: none
+GHOST_VALIDATION passed=1 ...
+>>> GHOSTTAG FLEET SURVIVED THE APOCALYPSE <<<
 ```
 
-The starter code boots and reads samples, but the validation fails until the two
-filter TODOs are implemented.
-
-## Implementation Hints
-
-For the threshold filter:
-
-- Reject values below `THRESHOLD_MIN_VALUE`.
-- Reject values above `THRESHOLD_MAX_VALUE`.
-- Reject values whose absolute jump from `previous_kept` exceeds
-  `THRESHOLD_MAX_JUMP`.
-
-For the model filter:
-
-- Compute `abs_center = abs(value - MODEL_CENTER_VALUE)`.
-- Compute `abs_jump = abs(value - previous_kept)`.
-- Apply the fixed-point score formula from `model_weights.h`.
-- Keep the sample when the score is at least `MODEL_KEEP_THRESHOLD_Q0`.
+Refresh the Results panel to open the generated survival report.

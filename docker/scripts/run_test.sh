@@ -1,80 +1,52 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -uo pipefail
+
+OUTPUT_DIR="${OUTPUT_DIR:-/workspace/output}"
+RESC_FILE="${RESC_FILE:-/workspace/build/ghosttag.resc}"
+mkdir -p "$OUTPUT_DIR"
+rm -f "$OUTPUT_DIR"/gateway-*.log "$OUTPUT_DIR/tag-sample.log" \
+      "$OUTPUT_DIR/renode.log" "$OUTPUT_DIR/validation.json" \
+      "$OUTPUT_DIR/report.html"
+
+echo "=== Generating deterministic BLE city sector ==="
+RESC_OUTPUT="$RESC_FILE" python3 /workspace/scripts/generate_swarm_resc.py
+
+echo "=== Running position-aware BLE fleet in Renode ==="
+set +e
+renode --disable-xwt --console "$RESC_FILE" >"$OUTPUT_DIR/renode.log" 2>&1
+RENODE_STATUS=$?
+set -e
+echo "Renode exit status: $RENODE_STATUS"
+
+if ls "$OUTPUT_DIR"/gateway-*.log >/dev/null 2>&1; then
+    echo "=== Gateway evidence (condensed) ==="
+    grep -hE 'GHOST_(GATEWAY_READY|SIGHT|ROGUE|SUMMARY)|FATAL' \
+        "$OUTPUT_DIR"/gateway-*.log | tail -120 || true
+else
+    echo "[ERROR] no gateway UART evidence was produced"
+fi
+
+echo "=== Validating fleet behavior ==="
+set +e
+python3 /workspace/scripts/validate_swarm.py
+VALIDATION_STATUS=$?
+python3 /workspace/scripts/generate_report.py "$OUTPUT_DIR"
+REPORT_STATUS=$?
 set -e
 
-OUTPUT_DIR=/workspace/output
-UART_FILE="$OUTPUT_DIR/uart_output.txt"
-RENODE_LOG="$OUTPUT_DIR/renode.log"
-RESC_FILE=/workspace/renode/run_test.resc
-
-mkdir -p "$OUTPUT_DIR"
-rm -f "$UART_FILE" "$RENODE_LOG" "$OUTPUT_DIR/report.html"
-
-echo "=== Running RP2040 sensor filtering scenario in Renode ==="
-
-renode --disable-xwt --console "$RESC_FILE" || true
-
-echo ""
-echo "=== UART Output ==="
-if [ ! -f "$UART_FILE" ]; then
-    echo "[ERROR] No UART output file found"
-    exit 1
+if [ "$RENODE_STATUS" -ne 0 ]; then
+    echo "[FAIL] Renode did not exit cleanly; inspect $OUTPUT_DIR/renode.log"
 fi
-
-cat "$UART_FILE"
-echo ""
-
-PASS=true
-
-check() {
-    local pattern="$1"
-    local label="$2"
-    if grep -qF "$pattern" "$UART_FILE"; then
-        echo "[PASS] $label"
-    else
-        echo "[FAIL] $label"
-        PASS=false
-    fi
-}
-
-count_check() {
-    local pattern="$1"
-    local expected="$2"
-    local label="$3"
-    local actual
-    actual=$(grep -cF "$pattern" "$UART_FILE" || true)
-    if [ "$actual" = "$expected" ]; then
-        echo "[PASS] $label ($actual)"
-    else
-        echo "[FAIL] $label expected=$expected actual=$actual"
-        PASS=false
-    fi
-}
-
-check "BOOT: RP2040 sensor filter TinyML lab" "Boot message"
-check "I2C sensor ready addr=0x52" "I2C sensor init"
-count_check "SAMPLE seq=" 10 "Sensor sample count"
-check "THRESHOLD seq=4 decision=DROP" "Threshold rejects high outlier"
-check "THRESHOLD seq=6 decision=DROP" "Threshold rejects low outlier"
-check "MODEL seq=2 decision=DROP" "Model rejects borderline jump"
-check "MODEL seq=7 decision=DROP" "Model rejects second borderline jump"
-count_check "DISAGREE seq=" 2 "Method disagreement count"
-check "SUMMARY threshold_keep=8 threshold_drop=2 model_keep=6 model_drop=4 disagreements=2" "Summary counts"
-check "TEST COMPLETE" "Test completion"
-
-echo ""
-echo "=== Generating report ==="
-python3 /workspace/scripts/generate_report.py "$OUTPUT_DIR" || true
-if [ -f "$OUTPUT_DIR/report.html" ]; then
+if [ "$REPORT_STATUS" -eq 0 ]; then
     echo "[PASS] report.html written to $OUTPUT_DIR"
 else
-    echo "[WARN] Report generation failed"
+    echo "[FAIL] report generation failed"
 fi
 
-echo ""
-if [ "$PASS" = true ]; then
-    echo ">>> ALL CHECKS PASSED - sensor filters behave as expected <<<"
+if [ "$RENODE_STATUS" -eq 0 ] && [ "$VALIDATION_STATUS" -eq 0 ]; then
+    echo ">>> GHOSTTAG FLEET SURVIVED THE APOCALYPSE <<<"
     exit 0
 fi
 
-echo ">>> SOME CHECKS FAILED - complete the firmware TODOs <<<"
+echo ">>> GHOSTTAG FLEET FAILED - complete the protocol TODOs <<<"
 exit 1

@@ -5,35 +5,18 @@ services:
       context: .
       dockerfile: docker/Dockerfile
       network: host
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
+    environment:
+      TAG_COUNT: "${TAG_COUNT:-12}"
+      GATEWAY_COUNT: "${GATEWAY_COUNT:-3}"
+      ATTACKER_COUNT: "${ATTACKER_COUNT:-2}"
+      SECTOR_INDEX: "${SECTOR_INDEX:-0}"
+      SIMULATION_SECONDS: "${SIMULATION_SECONDS:-8}"
     userns_mode: host
     security_opt:
       - label:disable
     volumes:
       - challenge-firmware:/workspace/firmware:ro
       - challenge-output:/workspace/output
-    entrypoint: ["/bin/bash", "/workspace/scripts/entrypoint.sh"]
-
-  digital-twin-metrics:
-    image: renode_dt-digital-twin:latest
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      network: host
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    userns_mode: host
-    security_opt:
-      - label:disable
-    volumes:
-      - challenge-firmware:/workspace/firmware:ro
-      - challenge-output:/workspace/output
-    entrypoint: ["/bin/bash", "-c", "/workspace/scripts/build_firmware.sh && /workspace/scripts/run_metrics.sh"]
-    profiles:
-      - metrics
 
   ide:
     image: renode_dt-ide:latest
@@ -47,8 +30,8 @@ services:
     ports:
       - "${IDE_PORT:-8443}:8080"
     environment:
-      - "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-renode_dt}"
-      - "RUNNER_SERVICE=digital-twin"
+      COMPOSE_PROJECT_NAME: "${COMPOSE_PROJECT_NAME:-renode_dt}"
+      RUNNER_SERVICE: digital-twin
     volumes:
       - challenge-firmware:/home/coder/challenge/firmware
       - challenge-problem:/home/coder/challenge/problem

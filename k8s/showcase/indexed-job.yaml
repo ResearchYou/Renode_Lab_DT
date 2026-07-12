@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ghosttag-apocalypse
+  namespace: challenge-platform
+  labels:
+    app.kubernetes.io/name: ghosttag-apocalypse
+    app.kubernetes.io/component: swarm-showcase
+spec:
+  completions: 12
+  parallelism: 4
+  completionMode: Indexed
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ghosttag-apocalypse
+        app.kubernetes.io/component: swarm-showcase
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: oci-registry
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: ghosttag-apocalypse
+              app.kubernetes.io/component: swarm-showcase
+      containers:
+        - name: city-sector
+          image: oci.cyb3rhell.com/challenge-platform/digital-twin:nrf52840-swarm-ghosttag-apocalypse
+          imagePullPolicy: Always
+          env:
+            - name: TAG_COUNT
+              value: "16"
+            - name: GATEWAY_COUNT
+              value: "3"
+            - name: ATTACKER_COUNT
+              value: "2"
+            - name: SIMULATION_SECONDS
+              value: "6"
+          resources:
+            requests:
+              cpu: "1800m"
+              memory: "2200Mi"
+              ephemeral-storage: "1Gi"
+            limits:
+              cpu: "3"
+              memory: "2560Mi"
+              ephemeral-storage: "4Gi"
+          volumeMounts:
+            - name: output
+              mountPath: /workspace/output
+      volumes:
+        - name: output
+          emptyDir:
+            sizeLimit: 4Gi

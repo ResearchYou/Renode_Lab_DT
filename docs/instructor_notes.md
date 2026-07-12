@@ -1,58 +1,34 @@
-# Instructor Notes: RP2040 Sensor Filtering TinyML Lab
+# Instructor Notes: GhostTag Apocalypse
 
-Use this file as the short run sheet. The fuller teaching material is in:
+## Three-hour format
 
-- `docs/lab_workflow.md`
-- `docs/renode_primer.md`
-- `docs/exercise_guide.md`
+- 0:00-0:20: premise, privacy threat model, 28-byte BLE budget.
+- 0:20-0:45: Renode machines, BLEMedium, positions, deterministic time.
+- 0:45-1:05: Zephyr broadcaster/observer split on nRF52840.
+- 1:05-1:25: SipHash round function and domain separation.
+- 1:25-2:35: implementation in teams.
+- 2:35-2:50: launch the indexed 252-board cluster showcase.
+- 2:50-3:00: compare fleet coverage, rotation, rogue rejection, and runtime cost.
 
-## Timing
+## Demo order
 
-- 0:00-0:15: Renode motivation, machine model, UART/log outputs.
-- 0:15-0:35: RESC walkthrough with `renode/run_test.resc`.
-- 0:35-0:55: REPL and virtual wiring walkthrough with `renode/sensor_i2c.repl`.
-- 0:55-1:15: Custom peripheral walkthrough with `VirtualSensorStream.cs`.
-- 1:15-1:30: Firmware/test/report workflow in the browser IDE.
-- 1:30-2:50: Student exercise: complete threshold and model filters.
-- 2:50-3:00: Debrief: why the model rejects borderline jump samples the naive
-  threshold accepts.
+1. Run the starter with six tags. Show that it compiles but every shaped packet
+   is treated as rogue.
+2. Show `generate_swarm_resc.py`, especially the nRF52840 machine creation,
+   position assignment, unique FICR BLE address, and per-device flash seed.
+3. Copy the reference protocol implementation into a disposable firmware mount
+   and show valid tag recovery without a stable radio ID.
+4. Increase to 12 tags for the IDE-scale test.
+5. Run `k8s/showcase/indexed-job.yaml` only after the runbook preflight is green.
 
-## Demo Flow
+## Guardrails
 
-1. Run `./run.sh up --build ide` and open `http://localhost:8443`.
-2. Show the problem statement and `firmware/main.c` TODOs.
-3. Open `renode/run_test.resc` and point out script ordering:
-   custom peripheral include, Pico board init, REPL overlay, ELF load, UART file.
-4. Open `renode/sensor_i2c.repl` and explain the sensor connection to `i2c0`.
-5. Open `VirtualSensorStream.cs` and show how reads advance through the sample
-   table.
-6. Run the starter once; expected result is sample reads pass and filter checks
-   fail.
-7. Apply the reference implementation from `reference/firmware/main.c` in a
-   throwaway container when demonstrating the final expected output.
+The showcase requests 1.8 CPU / 2200 MiB and limits each sector to 3 CPU /
+2560 MiB, with parallelism four. This fits the single 12-core/15 GiB worker
+observed on 2026-07-12 while leaving room for the challenge frontend and active
+IDEs. Do not raise parallelism while `k8s-worker1` is `NotReady`.
 
-## Expected Solution Behavior
-
-- Threshold keeps 8 samples and drops 2.
-- Model keeps 6 samples and drops 4.
-- The two method disagreements are samples `seq=2` and `seq=7`.
-
-## Validation Commands
-
-Starter/TODO variant:
-
-```bash
-./run.sh up --build digital-twin
-```
-
-Expected starter result: build and sample acquisition pass; filter checks fail.
-
-Reference implementation:
-
-```bash
-sg docker -c 'DOCKER_HOST=unix:///var/run/docker.sock docker run --rm --entrypoint /bin/bash \
-  -v "$PWD":/host:ro renode_dt-digital-twin:latest \
-  -lc "cp /host/reference/firmware/main.c /workspace/firmware/main.c && /workspace/scripts/entrypoint.sh"'
-```
-
-Expected reference result: all checks pass.
+The design is a hackathon digital twin, not a production tracking protocol.
+SipHash is used as a short-input PRF/MAC and the simulated fleet seeds are
+deterministic. Production devices require secure provisioning, protected key
+storage, replay policy, radio certification, and a complete privacy review.

@@ -1,5 +1,3 @@
 .claude/
 output/*
-report-app/node_modules/
-report-app/dist/
 *.tar
