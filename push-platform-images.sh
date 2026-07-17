@@ -150,6 +150,17 @@ detect_scenario_tag() {
     local detected
     detected="$(
         ssh "$PLATFORM_HOST" \
+            "kubectl get configmap active-scenario -n challenge-platform -o jsonpath='{.data.tag}'" \
+            2>/dev/null || true
+    )"
+
+    if [ -n "$detected" ]; then
+        printf '%s\n' "$detected"
+        return
+    fi
+
+    detected="$(
+        ssh "$PLATFORM_HOST" \
             "cd ~/eg106-platform && awk '/^[[:space:]]*tag:/ { print \$2; exit }' k8s/base/frontend/configmap-active-scenario.yaml" \
             2>/dev/null || true
     )"
