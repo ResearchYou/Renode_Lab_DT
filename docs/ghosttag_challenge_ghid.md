@@ -298,7 +298,7 @@ nu folosim conturile studentilor pentru a rula solutia de referinta.
 acceptanta din 18 iulie 2026:
 
 - commit runtime: `28cd5971c798fd6b02419d626462d53da09b2838`;
-- commit documentatie: vezi commitul ocw publicat imediat dupa runtime;
+- commit documentatie ocw: `8951a68b14dc6d89b7f6c03813b74caa2f3d5b9b`;
 - digest participant:
   `sha256:cca10144e4b069d6f5dfa01704fd4c7ea5857f50d04f079050cd71d9e827cd20`;
 - digest showcase:
