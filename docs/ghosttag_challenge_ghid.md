@@ -36,6 +36,7 @@ status verificat la 2026-07-18:
 | validare locala de referinta | trecuta | a trecut si cu reteaua dezactivata, 4 CPU si 4 GiB: 6/6 tag-uri, 6/6 rotite, raport HTML generat |
 | validare live de referinta | trecuta | rulare pornita prin API-ul IDE, `GHOST_VALIDATION passed=1`, `done: 0`, fara OOM |
 | validare live negativa | trecuta | starter-ul a produs 69 esecuri de contract, a sarit peste Renode, a generat raport si a terminat cu `done: 1` |
+| rezolvare live din skeleton | trecuta | numai contul `initial`: starter-ul a picat, cele 3 TODO-uri au fost completate, apoi Renode a validat 6/6 tag-uri, 6/6 rotite si exit 0 |
 | imagine studenti | publicata | sursa de referinta si helperul privat de provisioning sunt absente; gateway-ul foloseste numai un obiect ARM precompilat |
 | imagine showcase | publicata | seed separat cu referinta, acelasi runtime complet offline |
 | cluster Kubernetes | sanatos | toate cele 3 noduri sunt `Ready`, fara poduri defecte, pagina `/login` raspunde 200 |
@@ -346,7 +347,8 @@ Challenge-ul poate fi deschis studentilor cand toate punctele sunt adevarate:
 - [x] solutia de referinta nu este accesibila participantilor.
 - [x] `user1..user9` sunt provisionati si fiecare login ajunge in IDE.
 
-workspace-ul live `initial` a fost readus la starter dupa testul pozitiv.
+workspace-ul live `initial` contine solutia completata in validarea din
+2026-07-18; solutia nu este in repository si nu a fost copiata la studenti.
 utilizatorii `user1..user9` sunt activi; `user10` nu este provisionat.
 
 ## fisiere importante
