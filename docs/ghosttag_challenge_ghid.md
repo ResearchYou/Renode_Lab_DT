@@ -326,7 +326,7 @@ acceptanta din 18 iulie 2026:
 | `support/tests/test_protocol_contract.c` | contract complet imutabil |
 | `tests/test_protocol_contract.py` | referinta, starter si mutatii negative |
 | `ide/problem/problem.md` | enuntul studentului |
-| `docs/OCW_GHOSTTAG_CHALLENGE.md` | pagina ocw pentru studenti |
+| `docs/OCW_GHOSTTAG_CHALLENGE.txt` | sursa dokuwiki pentru pagina ocw |
 | `reference/firmware/` | solutia organizatorilor |
 | `support/gateway/` | observer trusted si replay policy |
 | `docker/scripts/generate_swarm_resc.py` | power cut si atacatori |

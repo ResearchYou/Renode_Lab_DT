@@ -35,10 +35,10 @@ as real Zephyr nRF52840 firmware and booted across the Renode swarm. The
 observer firmware is immutable and tries every authorized fleet seed; it never
 receives a stable ID over BLE.
 
-The student-facing OCW page is in
-[docs/OCW_GHOSTTAG_CHALLENGE.md](docs/OCW_GHOSTTAG_CHALLENGE.md), and the exact
-task contract is in [ide/problem/problem.md](ide/problem/problem.md). The
-completed implementation is under `reference/firmware/`.
+The student-facing DokuWiki source for OCW is in
+[docs/OCW_GHOSTTAG_CHALLENGE.txt](docs/OCW_GHOSTTAG_CHALLENGE.txt), and the
+exact task contract is in [ide/problem/problem.md](ide/problem/problem.md).
+The completed implementation is under `reference/firmware/`.
 
 ## Local smoke run
 
