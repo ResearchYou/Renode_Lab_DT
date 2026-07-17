@@ -22,6 +22,9 @@ def main() -> int:
             ("Rotating tags", f"{result['rotated_tags']} / {result['tag_count']}"),
             ("Valid sightings", result["valid_packets"]),
             ("Rogues rejected", result["rogue_packets"]),
+            ("Replays rejected", result.get("replay_packets", 0)),
+            ("Power-cut recovery", "PASS" if result.get("power_cut_recovered") else "FAIL"),
+            ("Energy units", f"{result.get('energy_units', 0)} / 80"),
         ]
     )
     checks = "".join(
@@ -44,7 +47,7 @@ main{{max-width:960px;margin:auto;padding:36px 22px}}h1{{font-size:clamp(30px,6v
 </style></head><body><main><div class="eyebrow">SECTOR {result['sector']} // OFFLINE FIND MESH</div>
 <h1>GHOSTTAG<br>APOCALYPSE</h1><div class="status {state_class}">{state}</div>
 <div class="grid">{cards}</div><h2>Survival checks</h2><ul>{checks}</ul>
-<footer>nRF52840 BLE machines in Renode · deterministic wireless range · authenticated rotating identities</footer>
+<footer>nRF52840 BLE machines in Renode · persistent key ratchet · power cuts · replay rejection · energy budget</footer>
 </main></body></html>"""
     (output / "report.html").write_text(document, encoding="utf-8")
     return 0

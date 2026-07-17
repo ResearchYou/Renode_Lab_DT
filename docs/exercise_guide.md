@@ -1,37 +1,42 @@
-# Participant Exercise Guide
+# Participant exercise guide
 
-The complete task is rendered in the browser from `ide/problem/problem.md`.
-This file is the short command-line companion.
+The complete task is rendered from `ide/problem/problem.md`. This file is the
+short command-line companion.
 
 ## Work surface
 
-- `firmware/ghost_protocol.c`: the only required edits.
-- `firmware/include/ghost_protocol.h`: wire layout and API contract.
-- `firmware/tests/test_protocol.c`: public known-answer and tamper tests.
-- `firmware/main.c`: Zephyr BLE broadcaster that calls the protocol.
-- `output/report.html`: generated swarm evidence.
+- edit only `firmware/ghost_protocol.c`;
+- read `firmware/include/ghost_protocol.h` for the fixed API and constants;
+- use `firmware/tests/test_protocol.c` for fast public feedback;
+- inspect `renode/` to understand the reset and attacker sequence;
+- open `output/report.html` after a complete run.
 
-The trusted gateway is intentionally outside the participant seed under
-`support/gateway/`.
+## Recommended order
+
+1. make all SipHash vectors pass;
+2. implement the ratchet and verify the epoch-16 known answer;
+3. build and verify protocol-v3 packets;
+4. implement record encoding, CRC32, scan, and commit-last append;
+5. reserve 16-epoch leases on fresh boot and recovery;
+6. handle torn body, torn commit, and corrupted newest-record cases;
+7. check the 2000-epoch wear bound;
+8. run Zephyr and Renode only after the native contract passes.
 
 ## Feedback layers
 
-The Run button executes three increasingly expensive gates:
+Run executes three gates:
 
-1. native C17 tests for the SipHash vectors and payload invariants;
-2. Zephyr builds for the Nordic nRF52840 DK target;
-3. a multi-machine Renode BLE simulation and cross-gateway evidence audit.
+1. native C17 protocol, persistence, corruption, and endurance tests;
+2. Zephyr builds for the nRF52840 tag and trusted gateway;
+3. an 8-second Renode swarm with a power cut, clone, replay, and energy audit.
 
-The starter compiles and broadcasts packets but fails authentication. A compile
-error stops before Renode; an algorithm error reaches the simulation and is
-reported as missing/rogue fleet traffic.
+The skeleton must fail at gate 1. A correct reference must pass all three.
 
-## Constraints
+## Fixed limits
 
-- Keep `GHOST_PAYLOAD_SIZE` at 28 bytes; a legacy BLE advertising data element
-  has only enough room for this payload plus its type/length overhead.
-- Keep all wire integers little-endian.
-- Use the MAC-domain key transform in the TODO comment/reference design; reusing
-  the raw EID key is rejected by the expected packet vectors.
-- Do not reveal `device_seed` in any form intended as a stable identifier.
-- Do not weaken verification to make the swarm accept clones.
+- 28-byte packet and protocol version 3;
+- two 4096-byte journal pages;
+- 40-byte records, CRC32, final commit word;
+- 16 epochs per durable lease;
+- at most 80 runtime energy units;
+- at most 252 flash writes and one erase over 2000 epochs.

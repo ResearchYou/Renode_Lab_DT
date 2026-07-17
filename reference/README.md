@@ -1,16 +1,16 @@
 # GhostTag reference implementation
 
 `reference/firmware/` is a complete drop-in replacement for the participant
-firmware seed. It implements canonical SipHash-2-4, domain-separated ephemeral
-IDs and MACs, constant-time payload comparison, and the same Zephyr broadcaster
-as the starter.
+firmware seed. It implements protocol v3: canonical SipHash-2-4, the persistent
+key ratchet, domain-separated EID/MAC, constant-time verification, a two-page
+commit-last journal, conservative crash recovery, and bounded flash wear.
 
 Validate it without modifying the participant tree:
 
 ```bash
 mkdir -p output
 podman run --rm \
-  -e TAG_COUNT=6 -e SIMULATION_SECONDS=6 \
+  -e TAG_COUNT=6 -e SIMULATION_SECONDS=8 \
   -v "$PWD/reference/firmware:/workspace/firmware:ro,Z" \
   -v "$PWD/output:/workspace/output:Z" \
   renode_dt-digital-twin:nrf52840-swarm-ghosttag-apocalypse

@@ -71,6 +71,16 @@ MUTATIONS = [
         "return 0u;",
     ),
     (
+        "wrong_ratchet_domain",
+        "input[0] = 0x52u;",
+        "input[0] = 0x53u;",
+    ),
+    (
+        "ratchet_lanes_collapsed",
+        "input[5] = 1u;",
+        "input[5] = 0u;",
+    ),
+    (
         "wrong_eid_domain",
         "eid_input[0] = 0x45u;",
         "eid_input[0] = 0x46u;",
@@ -96,15 +106,16 @@ MUTATIONS = [
 }""",
     ),
     (
-        "stable_seed_transmitted_as_eid",
-        "write_u64_le(out + 12, ghost_siphash24(key, eid_input, sizeof(eid_input)));",
-        "write_u64_le(out + 12, device_seed);",
+        "constant_eid",
+        """write_u64_le(out + 12,
+                 ghost_siphash24(epoch_key, eid_input, sizeof(eid_input)));""",
+        "write_u64_le(out + 12, 0u);",
     ),
     (
         "header_validation_removed",
         """    if (payload[0] != (uint8_t)GHOST_COMPANY_ID ||
         payload[1] != (uint8_t)(GHOST_COMPANY_ID >> 8) ||
-        payload[2] != GHOST_PROTOCOL_VERSION) {
+        payload[2] != GHOST_PROTOCOL_VERSION || epoch > GHOST_MAX_VERIFY_EPOCH) {
         return false;
     }
 
@@ -113,18 +124,45 @@ MUTATIONS = [
     ),
     (
         "eid_not_verified",
-        "for (size_t i = 12; i < GHOST_PAYLOAD_SIZE; ++i)",
-        "for (size_t i = 20; i < GHOST_PAYLOAD_SIZE; ++i)",
+        "for (size_t index = 12; index < GHOST_PAYLOAD_SIZE; ++index)",
+        "for (size_t index = 20; index < GHOST_PAYLOAD_SIZE; ++index)",
     ),
     (
         "mac_not_verified",
-        "for (size_t i = 12; i < GHOST_PAYLOAD_SIZE; ++i)",
-        "for (size_t i = 12; i < 20u; ++i)",
+        "for (size_t index = 12; index < GHOST_PAYLOAD_SIZE; ++index)",
+        "for (size_t index = 12; index < 20u; ++index)",
     ),
     (
         "all_payloads_accepted",
         "return difference == 0u;",
         "(void)difference;\n    return true;",
+    ),
+    (
+        "lease_reduced_to_one_epoch",
+        "index < GHOST_RATCHET_LEASE_EPOCHS",
+        "index < 1u",
+    ),
+    (
+        "crc_validation_disabled",
+        "read_u32_le(raw + 32) != crc32(raw, 32u)",
+        "(read_u32_le(raw + 32) == UINT32_MAX && crc32(raw, 32u) == UINT32_MAX)",
+    ),
+    (
+        "commit_written_at_wrong_offset",
+        "target + JOURNAL_COMMIT_OFFSET, commit,",
+        "target + JOURNAL_COMMIT_OFFSET - 1u, commit,",
+    ),
+    (
+        "uncertain_record_skips_only_one_lease",
+        "index < 2u * GHOST_RATCHET_LEASE_EPOCHS",
+        "index < GHOST_RATCHET_LEASE_EPOCHS",
+    ),
+    (
+        "recovery_flag_not_set",
+        """        memcpy(state->epoch_key, best.epoch_key, sizeof(state->epoch_key));
+        state->recovered = true;""",
+        """        memcpy(state->epoch_key, best.epoch_key, sizeof(state->epoch_key));
+        state->recovered = false;""",
     ),
 ]
 

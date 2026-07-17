@@ -1,84 +1,137 @@
-# GhostTag Apocalypse: build AirTag for the end of the Internet
+# GhostTag Apocalypse: build AirTag after the Internet
 
-The phones are dead. GPS is jammed. The cloud region is now a crater. There are
-still hundreds of battery-powered tags and a handful of BLE rescue gateways.
-Your job is to make the tags findable without broadcasting a permanent identity
-that turns every survivor into a tracking target.
+The phones are dead, GPS is jammed, and the cloud is gone. Battery-powered
+tags must remain findable through sparse BLE rescue gateways without exposing a
+permanent radio identity. Power is unstable, attackers replay captured packets,
+and every flash operation consumes scarce energy.
 
-## The swarm you are coding for
+This is an 8-hour firmware hackathon. Edit only
+`firmware/ghost_protocol.c`; the application, header, gateway, Renode scenario,
+and validator are fixed contracts.
 
-One test run boots a complete Renode city sector:
+## Expected schedule
 
-```text
-participant nRF52840 tags -- BLE advertisements --> observer nRF52840 gateways
-            |                                          |
-            +-- rotating private IDs                   +-- authorized fleet search
-            +-- authenticated packets                  +-- clone rejection
-            +-- no stable ID on air                    +-- multi-gateway coverage
-```
+| Time | Target |
+|---|---|
+| 0:00-1:00 | read the contract and make SipHash pass |
+| 1:00-2:30 | implement the ratchet, EID, MAC, and verification |
+| 2:30-5:00 | implement the two-page persistent journal |
+| 5:00-6:00 | handle torn writes, corruption, and reboot recovery |
+| 6:00-7:00 | meet flash-wear and energy limits |
+| 7:00-8:00 | diagnose the full Zephyr and Renode swarm |
 
-The normal IDE run uses 6 tags, three gateways, and two rogue clones. The
-cluster spectacle runs 12 indexed sectors containing 252 emulated nRF52840
-boards in total.
+## Simulation
 
-## Packet contract
+The normal Run boots 6 authorized nRF52840 tags, 3 observer gateways, one
+untrusted clone, and one replay attacker. At virtual second 3, Renode resets
+tag 1 without clearing its nonvolatile journal. The replay attacker then emits
+a captured, correctly authenticated epoch-0 packet from a different BLE
+address.
 
-Your 28-byte manufacturer payload is fixed:
+The gateway knows the authorized fleet seeds. It must see and rotate every tag,
+reject the untrusted clone, reject the replay, and observe tag 1 resume without
+reusing an epoch.
+
+## Fixed 28-byte packet
 
 | Bytes | Meaning |
 |---|---|
-| 0..1 | GhostTag company ID `0xF00D` |
-| 2 | protocol version `2` |
+| 0..1 | company ID `0xF00D`, little-endian |
+| 2 | protocol version `3` |
 | 3 | flags |
-| 4..7 | rotation epoch, little-endian |
+| 4..7 | persistent ratchet epoch, little-endian |
 | 8..11 | public city sector, little-endian |
 | 12..19 | keyed ephemeral ID |
-| 20..27 | keyed authentication tag over bytes 0..19 |
+| 20..27 | keyed MAC over bytes `0..19` |
 
-There is deliberately no stable tag ID in the packet. A trusted gateway tests
-the small authorized fleet keyspace to recover which tag sent a valid sighting.
-That is expensive in exactly the fun way: the cluster spends CPU so the radio
-packet can remain private and tiny.
+No stable tag ID may appear in the packet.
 
-## Your three TODOs
+## Cryptographic contract
 
-Edit only `firmware/ghost_protocol.c`:
-
-1. `ghost_siphash24`: implement canonical SipHash-2-4 with a 128-bit key,
-   64-bit output, and little-endian message words.
-2. `ghost_build_payload`: derive the ephemeral ID from domain byte `0x45`, the
-   epoch, and sector; derive the authentication tag with a distinct MAC key
-   domain; never copy `device_seed` into the packet.
-3. `ghost_verify_payload`: reject bad headers, wrong IDs, wrong authentication
-   tags, tampering, and the wrong device seed.
-
-Do not change the packet size, company ID, version, epoch duration, UART line
-formats, CMake files, or gateway code. Those are the digital-twin contract.
-
-## What attacks your implementation
-
-- canonical SipHash known-answer vectors;
-- bit flips in authenticated flags;
-- a wrong fleet seed;
-- stable-seed leakage scanning;
-- multiple epochs, which must produce different radio IDs;
-- real Zephyr builds for `nrf52840dk/nrf52840`;
-- many concurrent nRF52840 machines on a range-limited BLE medium;
-- unregistered devices sending correctly shaped clone traffic.
-
-## Passing evidence
-
-A pass ends with output similar to:
+The initial 16-byte key is already defined by `seed_to_key`. To advance from
+the current key to `next_epoch`, derive two SipHash outputs with this 6-byte
+input:
 
 ```text
-[PASS] SipHash known-answer and tamper suite: exit=0
-[PASS] all observer gateways boot: ready=3/3
-[PASS] entire authorized fleet is discoverable: all tags seen
-[PASS] every stable identity rotates on air: all tags rotated
-[PASS] unregistered clone traffic is rejected: rogue_packets=...
-[PASS] no firmware fatal errors: none
-GHOST_VALIDATION passed=1 ...
+0x52 || next_epoch_le32 || lane
+```
+
+Use lane `0` for key bytes `0..7` and lane `1` for bytes `8..15`. Replace the
+old key only after both outputs are computed.
+
+For a packet at epoch `e`:
+
+- derive the epoch key by ratcheting from epoch 0 through `e`;
+- derive the EID with SipHash over
+  `0x45 || epoch_le32 || sector_le32`;
+- derive a separate MAC key by XORing epoch-key bytes 0, 7, 8, and 15 with
+  `0x4d`, `0x41`, `0x43`, and `0xa7`;
+- authenticate packet bytes `0..19` with that MAC key;
+- compare expected EID and MAC without early exit;
+- reject malformed headers and epochs above `1,000,000`.
+
+## Persistent journal contract
+
+The state uses two 4096-byte pages. Flash begins erased (`0xff`), permits only
+1-to-0 writes, and is erased one complete page at a time. Records are appended
+in 40-byte slots:
+
+| Bytes | Meaning |
+|---|---|
+| 0..3 | magic `0x47535452` |
+| 4..7 | generation |
+| 8..11 | future resume epoch |
+| 12..15 | cumulative erase count |
+| 16..31 | ratcheted key for the resume epoch |
+| 32..35 | IEEE CRC32 over bytes `0..31` |
+| 36..39 | commit `0xC01117ED` |
+
+Write bytes `0..35` first and the commit word in a separate final write. A
+missing commit, bad CRC, bad magic, or half-written body is invalid.
+
+Reserve leases of 16 epochs. Before emitting from a fresh state, persist the
+key and epoch immediately after the lease. On clean recovery, resume from that
+future epoch and reserve another lease before emitting. If a non-erased invalid
+record exists after the newest valid record, conservatively advance two lease
+widths before reserving again. This prevents reuse even when a torn or
+corrupted record hid its generation and resume epoch.
+
+Append after the newest record. When its page is full, erase the other page and
+continue at its first slot. Never erase the page containing the newest valid
+record before its successor is durable.
+
+## Your six TODOs
+
+1. `ghost_siphash24`: canonical SipHash-2-4, including partial final blocks.
+2. `ratchet_step`: the two-lane persistent key ratchet.
+3. `build_with_epoch_key`: v3 header, EID, domain-separated MAC.
+4. `ghost_verify_payload`: strict, constant-time EID/MAC verification.
+5. `ghost_state_boot`: scan, validate, recover, and reserve the journal.
+6. `ghost_state_next_payload`: reserve before exhaustion, emit once, advance
+   RAM once.
+
+## Tests and resource limits
+
+The native suite checks all 64 SipHash vectors, an exact ratchet vector, an
+exact 28-byte packet, every one-byte tamper, torn body writes, torn commits,
+CRC corruption, reboot recovery, and 2000-epoch endurance.
+
+The runtime energy formula is fixed:
+
+```text
+units = flash_writes * 8 + page_erases * 40 + advertisements
+```
+
+One journal record costs two writes. The reboot scenario must stay at or below
+80 units. Across 2000 sequential epochs, the reference limit is at most 252
+writes and exactly one page erase.
+
+Passing native tests is necessary but not sufficient. The final output must
+include:
+
+```text
+GHOST_VALIDATION passed=1 ... replays=... recovered=1 energy=.../80
 >>> GHOSTTAG FLEET SURVIVED THE APOCALYPSE <<<
 ```
 
-Refresh the Results panel to open the generated survival report.
+Refresh Results after the run to inspect the generated HTML report.

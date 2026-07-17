@@ -4,7 +4,7 @@
 
 GhostTag is “AirTag 2 after civilization loses the cloud”: an offline fleet of
 tiny BLE broadcasters found by sparse rescue gateways. It is intentionally
-wild in scale but narrow enough for a three-hour firmware hackathon.
+wild in scale and deep enough for an eight-hour firmware hackathon.
 
 The improvement target is not radio range alone. It is verifiable privacy:
 
@@ -12,6 +12,9 @@ The improvement target is not radio range alone. It is verifiable privacy:
 - a keyed ID changes every two seconds of virtual time;
 - the packet is authenticated before a gateway accepts a sighting;
 - unauthorized devices can look syntactically correct but remain untrusted;
+- captured authorized packets are rejected when replayed from another address;
+- a persistent key ratchet survives a forced reset without epoch reuse;
+- flash wear and advertising cost remain inside a fixed energy budget;
 - one deterministic simulation can prove behavior across many full SoCs.
 
 ## Trust boundaries
@@ -25,13 +28,32 @@ Harness-controlled:
 
 - provisioned per-tag seeds and expected fleet range;
 - gateway firmware and key search;
-- Renode topology, simulation time, and UART capture;
+- Renode topology, power cut, replay injection, simulation time, and UART capture;
 - pass/fail validator and Kubernetes resource envelope.
 
 The gateway never receives the stable tag number. It enumerates the authorized
 sector fleet, derives each candidate seed, and validates the EID/MAC. At 16 tags
 this is intentionally computationally wasteful but very visible and easy to
 reason about during a hackathon.
+
+## Protocol-v3 state machine
+
+Each tag starts from a seed-derived root key and ratchets once per epoch. Before
+emitting, it persists the key and epoch at the far end of a 16-epoch lease. A
+reboot resumes there and durably reserves the next lease, so RAM state lost in
+the power cut cannot cause an on-air epoch to repeat.
+
+The journal has two 4096-byte pages and 40-byte append-only records. Each record
+contains generation, future epoch, future key, erase count, and CRC32. The
+commit word is written separately and last. Torn or corrupt records are ignored;
+an uncertain newest slot causes an extra two-lease skip before the next commit.
+Page rollover erases only the page that does not contain the newest valid
+record.
+
+The trusted gateway binds the first accepted packet for a tag to its BLE source
+address and latest epoch. A lower epoch or a valid packet from another address
+is counted as replay. This address binding is a simulation acceptance policy,
+not a complete production anti-relay protocol.
 
 ## Live infrastructure evidence
 

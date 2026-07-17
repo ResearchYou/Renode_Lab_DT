@@ -4,12 +4,12 @@
 
 ```text
 participant C
-  -> native known-answer/tamper binary
+  -> native protocol/persistence/endurance binary
   -> Zephyr nRF52840 tag ELF
                          \
 trusted gateway C         -> generated Renode city-sector script
   -> Zephyr gateway ELF  /       |
-                                BLEMedium + positions + 3 gateways
+                         BLEMedium + positions + power cut + attackers
                                           |
                               UART evidence from each gateway
                                           |
@@ -27,17 +27,21 @@ address and writes its deterministic private seed into an unused flash page
 after ELF loading. The firmware reads that page exactly as a provisioned device
 would read protected identity material.
 
+The generator also loads an erased 8 KiB journal image into each machine. After
+three virtual seconds it resets tag 1 without clearing that memory, then adds a
+second-address attacker that replays tag 1's valid epoch-0 packet.
+
 `docker/scripts/validate_swarm.py` uses only observable gateway UART output. It
 does not inspect participant C variables or tag RAM.
 
 ## Scale modes
 
-| Mode | Tags | Gateways | Rogues | Purpose |
-|---|---:|---:|---:|---|
-| local smoke | 6 | 3 | 2 | image/runtime check |
-| participant IDE | 6 | 3 | 2 | normal feedback loop |
-| one showcase sector | 16 | 3 | 2 | cluster stress unit |
-| 12-sector indexed Job | 192 | 36 | 24 | 252-board spectacle |
+| Mode | Tags | Gateways | Clone | Replay | Purpose |
+|---|---:|---:|---:|---:|---|
+| local smoke | 6 | 3 | 1 | 1 | image/runtime check |
+| participant IDE | 6 | 3 | 1 | 1 | normal feedback loop |
+| one showcase sector | 16 | 3 | 1 | 1 | cluster stress unit |
+| 12-sector indexed Job | 192 | 36 | 12 | 12 | 252-board spectacle |
 
 Sectors are independent deterministic RF domains. Kubernetes assigns each
 Indexed Job completion a sector number through `JOB_COMPLETION_INDEX`.

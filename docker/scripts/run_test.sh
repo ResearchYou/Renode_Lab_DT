@@ -23,7 +23,7 @@ echo "Renode exit status: $RENODE_STATUS"
 
 if ls "$OUTPUT_DIR"/gateway-*.log >/dev/null 2>&1; then
     echo "=== Gateway evidence (condensed) ==="
-    grep -hE 'GHOST_(GATEWAY_READY|SIGHT|ROGUE|SUMMARY)|FATAL' \
+    grep -hE 'GHOST_(GATEWAY_READY|SIGHT|ROGUE|REPLAY|SUMMARY)|FATAL' \
         "$OUTPUT_DIR"/gateway-*.log | tail -120 || true
 else
     echo "[ERROR] no gateway UART evidence was produced"

@@ -9,8 +9,10 @@ Each simulated city sector contains:
 
 - 16 Nordic nRF52840 tags running participant-built Zephyr firmware;
 - three nRF52840 observer gateways on a position-aware Renode BLE medium;
-- two unregistered clone devices that must be rejected;
+- one unregistered clone and one captured-packet replay attacker;
 - rotating, authenticated 28-byte advertisements with no stable device ID;
+- persistent two-page ratchet state that survives a forced power cut;
+- an explicit flash-write, erase, and advertising energy budget;
 - repeatable RF range, placement, timing, and adversarial traffic.
 
 The full indexed Kubernetes showcase is 12 sectors: **192 authorized tags, 36
@@ -19,11 +21,14 @@ spread across the two 12-core workers.
 
 ## Participant challenge
 
-Only `firmware/ghost_protocol.c` contains the three required TODOs:
+Only `firmware/ghost_protocol.c` contains the six required TODOs:
 
 1. implement SipHash-2-4 against the authors' known-answer vectors;
-2. build a rotating ephemeral identity and domain-separated authentication tag;
-3. verify the packet without accepting tampering or an untrusted fleet key.
+2. implement the two-lane per-epoch key ratchet;
+3. build a v3 ephemeral identity and domain-separated authentication tag;
+4. verify packets without accepting tampering or an untrusted fleet key;
+5. recover a CRC-protected, commit-last flash journal after torn writes;
+6. reserve 16-epoch leases without reusing epochs or exceeding the energy cap.
 
 The same code is first attacked by native known-answer/tamper tests, then built
 as real Zephyr nRF52840 firmware and booted across the Renode swarm. The
@@ -43,7 +48,7 @@ even when the Docker daemon is stopped:
 podman build -f docker/Dockerfile -t renode_dt-digital-twin:ghosttag .
 mkdir -p output
 podman run --rm \
-  -e TAG_COUNT=6 -e SIMULATION_SECONDS=6 \
+  -e TAG_COUNT=6 -e SIMULATION_SECONDS=8 \
   -v "$PWD/firmware:/workspace/firmware:ro,Z" \
   -v "$PWD/output:/workspace/output:Z" \
   renode_dt-digital-twin:ghosttag

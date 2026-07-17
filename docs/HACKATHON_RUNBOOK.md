@@ -63,7 +63,7 @@ pytest -q tests/test_protocol_contract.py
 mkdir -p output
 podman run --rm \
   --network none --cpus=4 --memory=4g \
-  -e TAG_COUNT=6 -e SIMULATION_SECONDS=6 \
+  -e TAG_COUNT=6 -e SIMULATION_SECONDS=8 \
   -v "$PWD/reference/firmware:/workspace/firmware:ro,Z" \
   -v "$PWD/output:/workspace/output:Z" \
   renode_dt-digital-twin:nrf52840-swarm-ghosttag-apocalypse
@@ -78,7 +78,7 @@ Smoke-test the organizer-only seed without a firmware mount:
 
 ```bash
 podman run --rm \
-  -e TAG_COUNT=6 -e SIMULATION_SECONDS=6 \
+  -e TAG_COUNT=6 -e SIMULATION_SECONDS=8 \
   -v "$PWD/output:/workspace/output:Z" \
   renode_dt-digital-twin-showcase:nrf52840-swarm-ghosttag-apocalypse
 ```

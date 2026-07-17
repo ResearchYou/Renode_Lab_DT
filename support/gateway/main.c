@@ -15,10 +15,17 @@
 
 struct tag_state {
     bool seen;
+    bool owner_set;
+    bt_addr_le_t owner;
     uint32_t last_epoch;
+    uint32_t last_replay_epoch;
     uint64_t last_eid;
     uint32_t sightings;
     uint32_t rotations;
+};
+
+struct packet_context {
+    const bt_addr_le_t *address;
 };
 
 static struct tag_state tags[GHOST_TAG_COUNT];
@@ -26,6 +33,7 @@ static uint32_t gateway_id;
 static uint32_t unique_tags;
 static uint32_t valid_packets;
 static uint32_t rogue_packets;
+static uint32_t replay_packets;
 static uint32_t total_rotations;
 static uint32_t last_rogue_epoch = UINT32_MAX;
 
@@ -57,7 +65,7 @@ static bool identify(const uint8_t payload[GHOST_PAYLOAD_SIZE],
 
 static bool parse_ad(struct bt_data *data, void *user_data)
 {
-    (void)user_data;
+    const struct packet_context *context = user_data;
     if (data->type != BT_DATA_MANUFACTURER_DATA ||
         data->data_len != GHOST_PAYLOAD_SIZE) {
         return true;
@@ -80,12 +88,30 @@ static bool parse_ad(struct bt_data *data, void *user_data)
     struct tag_state *state = &tags[local_index];
     uint32_t tag_id = GHOST_TAG_ID_BASE + local_index + 1u;
     uint64_t eid = ghost_payload_eid(payload);
+
+    if (state->seen &&
+        (epoch < state->last_epoch ||
+         (state->owner_set &&
+          bt_addr_le_cmp(&state->owner, context->address) != 0))) {
+        replay_packets++;
+        if (state->last_replay_epoch != epoch) {
+            state->last_replay_epoch = epoch;
+            printk("GHOST_REPLAY gateway=%u tag=%u sector=%u epoch=%u last=%u\n",
+                   gateway_id, tag_id, GHOST_SECTOR, epoch,
+                   state->last_epoch);
+        }
+        return true;
+    }
+
     valid_packets++;
     state->sightings++;
 
     if (!state->seen) {
         state->seen = true;
+        state->owner_set = true;
+        bt_addr_le_copy(&state->owner, context->address);
         state->last_epoch = epoch;
+        state->last_replay_epoch = UINT32_MAX;
         state->last_eid = eid;
         unique_tags++;
         printk("GHOST_SIGHT gateway=%u tag=%u sector=%u epoch=%u eid=%016llx first=1\n",
@@ -109,10 +135,10 @@ static bool parse_ad(struct bt_data *data, void *user_data)
 static void device_found(const bt_addr_le_t *address, int8_t rssi,
                          uint8_t type, struct net_buf_simple *advertisement)
 {
-    (void)address;
     (void)rssi;
     (void)type;
-    bt_data_parse(advertisement, parse_ad, NULL);
+    const struct packet_context context = {.address = address};
+    bt_data_parse(advertisement, parse_ad, (void *)&context);
 }
 
 int main(void)
@@ -146,9 +172,9 @@ int main(void)
 
     while (true) {
         k_sleep(K_SECONDS(2));
-        printk("GHOST_SUMMARY gateway=%u sector=%u unique=%u valid=%u rotations=%u rogues=%u\n",
+        printk("GHOST_SUMMARY gateway=%u sector=%u unique=%u valid=%u rotations=%u rogues=%u replays=%u\n",
                gateway_id, GHOST_SECTOR, unique_tags, valid_packets,
-               total_rotations, rogue_packets);
+               total_rotations, rogue_packets, replay_packets);
     }
 
     return 0;

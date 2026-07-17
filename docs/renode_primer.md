@@ -36,8 +36,13 @@ address and writes a seed/config record into the final nRF52840 flash page at
 `0x000FF000`. That page is outside the application image. This makes one build
 scale to dozens of distinct devices without compiling per-tag binaries.
 
+The two journal pages occupy `0x000FD000..0x000FEFFF`. The generator initializes
+them from an all-`0xff` binary before starting the machine. `machine Reset` at
+virtual second 3 resets CPU and peripherals but preserves this mapped flash, so
+the same ELF must recover its ratchet state.
+
 ## Evidence
 
 Only gateway UARTs are authoritative for the fleet pass. Renode file backends
-capture `GHOST_SIGHT`, `GHOST_ROGUE`, and `GHOST_SUMMARY` lines. One sample tag
-UART is retained for debugging rotation failures.
+capture `GHOST_SIGHT`, `GHOST_ROGUE`, `GHOST_REPLAY`, and `GHOST_SUMMARY` lines.
+One sample tag UART captures state, rotation, and energy evidence across reset.

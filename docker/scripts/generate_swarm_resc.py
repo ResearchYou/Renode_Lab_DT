@@ -12,6 +12,10 @@ from ghosttag_secrets import seed_for_tag
 
 CONFIG_BASE = 0x000FF000
 CONFIG_MAGIC = 0x47484F53
+JOURNAL_BASE = 0x000FD000
+JOURNAL_SIZE = 8192
+ROLE_REPLAY = 0x52504C59
+POWER_CUT_SECOND = 3
 
 
 def env_int(name: str, default: int, minimum: int, maximum: int) -> int:
@@ -42,6 +46,8 @@ def machine(
         f'mach create "{name}"',
         "machine LoadPlatformDescription @platforms/cpus/nrf52840.repl",
         f"sysbus LoadELF @{elf}",
+        "sysbus LoadBinary @/workspace/build/ghosttag-erased-journal.bin "
+        f"0x{JOURNAL_BASE:08X}",
         f"sysbus WriteDoubleWord 0x100000A0 0x1",
         f"sysbus WriteDoubleWord 0x100000A4 0x{address_low:08X}",
         f"sysbus WriteDoubleWord 0x100000A8 0x{address_high:08X}",
@@ -76,12 +82,15 @@ def tag_positions(count: int) -> list[tuple[float, float, float]]:
 def main() -> None:
     tag_count = env_int("TAG_COUNT", 6, 1, 64)
     gateway_count = env_int("GATEWAY_COUNT", 3, 1, 3)
-    attacker_count = env_int("ATTACKER_COUNT", 2, 1, 8)
+    attacker_count = env_int("ATTACKER_COUNT", 2, 2, 8)
     sector = env_int("SECTOR_INDEX", 0, 0, 9999)
     seed_variants = env_int("RENODE_SEED_VARIANTS", 10000, 1, 10000)
-    duration = env_int("SIMULATION_SECONDS", 6, 4, 60)
+    duration = env_int("SIMULATION_SECONDS", 8, 8, 60)
     output = Path(os.environ.get("RESC_OUTPUT", "/workspace/build/ghosttag.resc"))
     output.parent.mkdir(parents=True, exist_ok=True)
+    (output.parent / "ghosttag-erased-journal.bin").write_bytes(
+        bytes([0xFF]) * JOURNAL_SIZE
+    )
 
     tag_id_base = sector * tag_count
     gateway_positions = [(0.0, 0.0, 8.0), (120.0, 0.0, 8.0), (60.0, 104.0, 8.0)]
@@ -124,7 +133,7 @@ def main() -> None:
             )
         )
 
-    for attacker in range(attacker_count):
+    for attacker in range(attacker_count - 1):
         rogue_id = tag_id_base + tag_count + 1000 + attacker
         lines.extend(
             machine(
@@ -138,9 +147,31 @@ def main() -> None:
             )
         )
 
+    reset_tag = tag_id_base + 1
+    replay_address_id = tag_id_base + tag_count + 2000
     lines.extend(
         [
-            'emulation RunFor "00:00:%02d"' % duration,
+            'emulation RunFor "00:00:%02d"' % POWER_CUT_SECOND,
+            f'mach set "tag-{reset_tag}"',
+            "machine Reset",
+            "mach clear",
+            "",
+        ]
+    )
+    lines.extend(
+        machine(
+            "replay-0",
+            "/workspace/build/tag/zephyr/zephyr.elf",
+            (7.0, 8.0, 1.0),
+            replay_address_id,
+            seed_for_tag(reset_tag),
+            sector,
+            ROLE_REPLAY,
+        )
+    )
+    lines.extend(
+        [
+            'emulation RunFor "00:00:%02d"' % (duration - POWER_CUT_SECOND),
             "q",
             "",
         ]
@@ -148,7 +179,8 @@ def main() -> None:
     output.write_text("\n".join(lines), encoding="utf-8")
     print(
         f"Generated {output}: sector={sector} tags={tag_count} "
-        f"gateways={gateway_count} rogues={attacker_count}"
+        f"gateways={gateway_count} rogues={attacker_count - 1} "
+        "replays=1 power_cuts=1"
     )
 
 

@@ -15,8 +15,8 @@ DOCKERFILE = ROOT / "docker/Dockerfile"
 
 def test_problem_statement_matches_normal_run_scale() -> None:
     problem = (ROOT / "ide/problem/problem.md").read_text(encoding="utf-8")
-    assert "normal IDE run uses 6 tags" in problem
-    assert "normal IDE run uses 12 tags" not in problem
+    assert "normal Run boots 6 authorized nRF52840 tags" in problem
+    assert "normal Run boots 12 authorized nRF52840 tags" not in problem
 
 
 def test_public_generator_does_not_expose_seed_derivation() -> None:
@@ -62,9 +62,13 @@ def test_generator_still_creates_a_complete_scenario() -> None:
         scenario = output.read_text(encoding="utf-8")
         assert scenario.count('mach create "gateway-') == 3
         assert scenario.count('mach create "tag-') == 6
-        assert scenario.count('mach create "rogue-') == 2
+        assert scenario.count('mach create "rogue-') == 1
+        assert scenario.count('mach create "replay-') == 1
         assert 'emulation CreateBLEMedium "ghostAir"' in scenario
-        assert 'emulation RunFor "00:00:06"' in scenario
+        assert scenario.count("ghosttag-erased-journal.bin") == 11
+        assert 'emulation RunFor "00:00:03"' in scenario
+        assert 'emulation RunFor "00:00:05"' in scenario
+        assert "machine Reset" in scenario
 
 
 def test_participant_image_seeds_exact_explorer_surface() -> None:
