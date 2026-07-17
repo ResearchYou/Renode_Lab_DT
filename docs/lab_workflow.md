@@ -35,7 +35,7 @@ does not inspect participant C variables or tag RAM.
 | Mode | Tags | Gateways | Rogues | Purpose |
 |---|---:|---:|---:|---|
 | local smoke | 6 | 3 | 2 | image/runtime check |
-| participant IDE | 12 | 3 | 2 | normal feedback loop |
+| participant IDE | 6 | 3 | 2 | normal feedback loop |
 | one showcase sector | 16 | 3 | 2 | cluster stress unit |
 | 12-sector indexed Job | 192 | 36 | 24 | 252-board spectacle |
 

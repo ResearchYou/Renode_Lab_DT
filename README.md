@@ -14,9 +14,8 @@ Each simulated city sector contains:
 - repeatable RF range, placement, timing, and adversarial traffic.
 
 The full indexed Kubernetes showcase is 12 sectors: **192 authorized tags, 36
-gateways, and 24 attackers — 252 emulated boards**. Four sectors run at once so
-the current 12-core worker can survive the demo; Kubernetes spreads them when
-the second worker returns.
+gateways, and 24 attackers — 252 emulated boards**. Four sectors run at once,
+spread across the two 12-core workers.
 
 ## Participant challenge
 
@@ -66,7 +65,7 @@ This branch is directly compatible with the live `eg106-platform` contract:
 Use [docs/HACKATHON_RUNBOOK.md](docs/HACKATHON_RUNBOOK.md) for the image push,
 active-scenario switch, per-user test, showcase launch, rollback, and degraded
 node behavior. Do not apply the cluster manifests blindly: the runbook starts
-with preflight checks because `cloud_s2` was `NotReady` during development.
+with live health and capacity checks for both workers.
 
 ## Why these exact boards and tools
 

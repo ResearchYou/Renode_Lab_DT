@@ -24,23 +24,25 @@ status verificat la 2026-07-17:
 
 | componenta | status | observatii |
 |---|---|---|
-| codul challenge-ului | gata | runtime-ul validat este construit din commit-ul `5c1bf54` pe branch-ul `nrf52840-swarm/ghosttag-apocalypse` |
+| codul challenge-ului | gata | runtime-ul live este construit din commit-ul `e82509d` pe branch-ul `nrf52840-swarm/ghosttag-apocalypse` |
 | starter pentru studenti | gata | contine exact 3 TODO-uri in `firmware/ghost_protocol.c` |
 | implementare de referinta | gata | se afla in `reference/firmware/`; nu trebuie oferita studentilor |
 | teste native | gata | 64 vectori SipHash, vector complet de payload, tamper pe fiecare byte, header/EID/MAC, seed, sector si leakage |
 | build Zephyr | gata | tag si gateway pentru `nrf52840dk/nrf52840` |
 | simulare Renode | gata | tag-uri, gateway-uri, clone, pozitii si raza BLE determinista |
 | validator si raport | gata | produce `validation.json` si `output/report.html` |
-| integrare cu platforma | gata in repository | exista manifest pentru scenariu si Job-ul de showcase |
+| integrare cu platforma | activa live | scenariul este activ in ConfigMap si in workspace-ul `initial` |
 | matrice pozitiva si negativa | trecuta | referinta trece; starter-ul si 9 mutatii invalide pica; modificarea contractului pica cu exit 2 |
-| validare locala de referinta | trecuta | 6/6 tag-uri, 6/6 rotite, 75 pachete rogue respinse, raport HTML generat |
-| imagine studenti | gata local | sursa de referinta este absenta; gateway-ul foloseste numai un obiect ARM precompilat |
-| imagine showcase | gata local | seed separat cu referinta; smoke test-ul fara mount trece complet |
-| cluster Kubernetes | sanatos | toate cele 3 noduri sunt `Ready`, fara poduri defecte, health public 200 |
-| scenariu activ pentru studenti | nu | platforma foloseste inca `rp2040-sensor-filter-tinyml` |
-| imagine GhostTag in registry | confirmata | ambele tag-uri au digest, label de commit si pull real reusit pe cei doi workeri |
-| showcase GhostTag | nu ruleaza | Job-ul `ghosttag-apocalypse` este absent |
-| utilizatori test live | eliminati | lotul `user1..user10` si namespace-urile lui au fost sterse; a ramas `initial` |
+| validare locala de referinta | trecuta | a trecut si cu reteaua dezactivata, 4 CPU si 4 GiB: 6/6 tag-uri, 6/6 rotite, raport HTML generat |
+| validare live de referinta | trecuta | rulare pornita prin API-ul IDE, `GHOST_VALIDATION passed=1`, `done: 0`, fara OOM |
+| validare live negativa | trecuta | starter-ul a produs 69 esecuri de contract, a sarit peste Renode, a generat raport si a terminat cu `done: 1` |
+| imagine studenti | publicata | sursa de referinta este absenta; gateway-ul foloseste numai un obiect ARM precompilat |
+| imagine showcase | publicata | seed separat cu referinta, acelasi runtime complet offline |
+| cluster Kubernetes | sanatos | toate cele 3 noduri sunt `Ready`, fara poduri defecte, pagina `/login` raspunde 200 |
+| scenariu activ pentru studenti | da | `nrf52840-swarm-ghosttag-apocalypse` este presetul live |
+| imagine GhostTag in registry | confirmata | digest participant `2c27080fe40f`, digest showcase `2079e1f5fb0a`, ambele cu label `e82509d` |
+| showcase GhostTag | trecut | 12/12 sectoare, 192/192 tag-uri vazute si rotite, zero esecuri, zero restarturi si zero retry |
+| utilizatori test live | eliminati | credentialele contin numai `initial`; namespace-urile `user1..user10` au fost sterse si nu au fost recreate |
 
 ## ce este deja implementat
 
@@ -97,19 +99,31 @@ variabilele c ale studentului si nu inspecteaza memoria tag-urilor.
 Testul de contract este in imagine si nu poate fi inlocuit din workspace.
 Gateway-ul foloseste un obiect ARM precompilat. Imaginea studentilor nu contine
 directorul `reference/` si nu contine sursa implementarii organizatorilor.
+Cand testele de contract esueaza, pipeline-ul opreste build-ul si simularea,
+scrie totusi `validation.json` si `report.html`, apoi intoarce exit nenul.
 
 ### scara scenariului
 
 | mod | tag-uri | gateway-uri | clone rogue | total placi |
 |---|---:|---:|---:|---:|
 | smoke local | 6 | 3 | 2 | 11 |
-| rulare normala student | 12 | 3 | 2 | 17 |
+| rulare normala student | 6 | 3 | 2 | 11 |
 | un sector showcase | 16 | 3 | 2 | 21 |
 | showcase complet | 192 | 36 | 24 | 252 |
 
 Showcase-ul foloseste 12 sectoare independente si ruleaza maximum 4 in paralel.
-Fiecare sector are limita de `3 CPU` si `2560 MiB` RAM. Aceste valori au fost
-alese dupa testare reala; nu trebuie crescute fara un nou test de capacitate.
+O rulare de student cere si limiteaza `4 CPU` si `4096 MiB` RAM. Un sector de
+showcase cere `1800m CPU` si `4096 MiB`, cu limite de `3 CPU` si `5120 MiB`.
+Showcase-ul observa 8 secunde simulate si nu permite retry la validare. Aceste
+valori nu trebuie schimbate fara un nou test de capacitate. Fiecare pod are si
+un deadline dur de 30 minute, ca un emulator blocat sa devina esec explicit.
+Seed-ul RF 11 a produs o crestere patologica a timpului host la testul de
+capacitate. Ultimul sector refoloseste programarea RF validata pentru seed 0,
+dar pastreaza sectorul, cheile, adresele si id-urile sale distincte.
+
+Acceptanta live finala a terminat indexurile `0-11` pe digestul showcase
+`2079e1f5fb0a`. Toate cele 12 poduri au iesit cu cod 0 si fiecare log contine
+`GHOST_VALIDATION passed=1`, `tags=16/16` si `rotated=16/16`.
 
 ### infrastructura live
 
@@ -122,9 +136,12 @@ Platforma a fost recuperata si intarita dupa incidentul de alimentare:
 - provisioner-ul selecteaza numai workeri `Ready=True` si schedulable;
 - toate cele 3 noduri au systemd in starea `running`;
 - blocarea infinita in `plymouth-quit-wait.service` a fost eliminata;
-- jurnalele systemd sunt persistente pe toate nodurile.
+- jurnalele systemd sunt persistente pe toate nodurile;
+- build-ul Zephyr protejeaza automat Ninja de diferentele de ceas host-cluster;
+- imaginea include local SVD-ul nRF52840, deci Renode nu acceseaza internetul;
+- heap-ul Mono are limita soft de 2 GiB, sub limita podului.
 
-Modificarile platformei sunt in commit-ul `f5081ea` din
+Modificarile platformei sunt in commit-ul `87fa465` din
 `/home/pwd/eg106-platform` pe `cloud_s1`.
 
 ## ce trebuie sa faca studentii
@@ -225,10 +242,11 @@ Compilarea fara erori nu este suficienta.
 9. activam `k8s/platform/active-scenario.yaml`;
 10. testam cu un utilizator disposable.
 
-Testul disposable trebuie sa demonstreze ambele directii:
+Testul disposable trebuie sa demonstreze ambele directii. Pe live, ambele au
+fost verificate prin acelasi API folosit de butonul Run:
 
-- starter-ul este seed-uit corect si esueaza curat;
-- implementarea de referinta trece complet;
+- starter-ul este seed-uit corect si esueaza curat cu exit 1;
+- implementarea de referinta trece complet cu exit 0;
 - raportul apare in Results;
 - fisierele vechi sunt arhivate la schimbarea scenariului.
 
@@ -307,23 +325,22 @@ fiecare log contine `GHOST_VALIDATION passed=1`.
 
 Challenge-ul poate fi deschis studentilor cand toate punctele sunt adevarate:
 
-- [ ] imaginea GhostTag este construita din commit-ul dorit;
-- [ ] smoke test-ul de referinta trece;
-- [ ] tagul imaginii este confirmat in registry;
-- [ ] toate nodurile necesare sunt `Ready`;
-- [ ] frontend-ul si DNS-ul sunt sanatoase;
-- [ ] dry-run-ul manifestelor trece;
-- [ ] starea anterioara a scenariului este salvata;
-- [ ] scenariul GhostTag este activ;
-- [ ] starter-ul esueaza controlat pentru utilizatorul disposable;
-- [ ] referinta trece pentru utilizatorul disposable;
-- [ ] raportul HTML se incarca in Results;
-- [ ] rollback-ul este pregatit;
-- [ ] solutia de referinta nu este accesibila participantilor.
+- [x] imaginea GhostTag este construita din commit-ul dorit;
+- [x] smoke test-ul de referinta trece si fara acces la retea;
+- [x] tagul imaginii este confirmat in registry;
+- [x] toate nodurile necesare sunt `Ready`;
+- [x] frontend-ul si DNS-ul sunt sanatoase;
+- [x] dry-run-ul manifestelor trece;
+- [x] starea anterioara a scenariului este salvata;
+- [x] scenariul GhostTag este activ;
+- [x] starter-ul esueaza controlat pentru utilizatorul disposable;
+- [x] referinta trece pentru utilizatorul disposable;
+- [x] raportul HTML se incarca in Results;
+- [x] rollback-ul este pregatit;
+- [x] solutia de referinta nu este accesibila participantilor.
 
-La momentul scrierii, primele doua actiuni operationale ramase sunt build/push
-pentru imagine si activarea controlata a scenariului. Nu trebuie lansat
-showcase-ul inainte de testul disposable.
+workspace-ul live `initial` a fost readus la starter dupa testul pozitiv.
+utilizatorii `user1..user10` raman scosi pana la reprovisionarea planificata.
 
 ## fisiere importante
 

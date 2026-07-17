@@ -26,9 +26,9 @@ kubectl get cm active-scenario -n challenge-platform -o yaml
 kubectl get jobs -A
 ```
 
-Stop if the API server, registry secret, challenge frontend, or only schedulable
-worker is unhealthy. `cloud_s2` / `k8s-worker1` was `NotReady` on 2026-07-12;
-the manifests tolerate one missing worker, but not zero.
+Stop if the API server, registry secret, challenge frontend, or both workers
+are unhealthy. Both workers were `Ready` in the 2026-07-17 acceptance run; the
+manifests can queue work with one missing worker, but capacity is reduced.
 
 ## 2. Build and validate the image
 
@@ -62,6 +62,7 @@ pytest -q tests/test_protocol_contract.py
 
 mkdir -p output
 podman run --rm \
+  --network none --cpus=4 --memory=4g \
   -e TAG_COUNT=6 -e SIMULATION_SECONDS=6 \
   -v "$PWD/reference/firmware:/workspace/firmware:ro,Z" \
   -v "$PWD/output:/workspace/output:Z" \
@@ -85,14 +86,11 @@ podman run --rm \
 The validated runtime image is approximately 3.76 GB, so confirm registry and
 node image-storage headroom before the event.
 
-The repository's existing `push-platform-images.sh` still uses the Docker
-daemon and registry tunnel. If Docker is running, use the explicit tag so the
-currently active old scenario does not choose the wrong image name:
+`push-platform-images.sh` detects the live scenario before repository defaults,
+supports Podman/Skopeo, and pushes through the registry tunnel:
 
 ```bash
-BUILD=0 PUSH_ENGINE=podman \
-  SCENARIO_TAG=nrf52840-swarm-ghosttag-apocalypse \
-  ./push-platform-images.sh push digital-twin showcase
+PUSH_ENGINE=podman ./push-platform-images.sh push digital-twin showcase
 ```
 
 After push, verify both manifests through the registry API or with pulls from a
@@ -142,7 +140,11 @@ kubectl get pods -n challenge-platform \
 ```
 
 Each indexed completion is an independent sector. The Job runs four sectors at
-once and eventually completes all 12. Inspect a sector and the aggregate state:
+once, observes eight seconds of virtual time, and eventually completes all 12.
+The committed `backoffLimit: 0` makes any failed sector fail acceptance instead
+of hiding it behind a retry. Each pod also has a 30-minute hard deadline, so a
+stalled emulator becomes an explicit failure. Inspect a sector and the
+aggregate state:
 
 ```bash
 kubectl logs -n challenge-platform \

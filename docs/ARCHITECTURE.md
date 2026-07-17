@@ -35,20 +35,20 @@ reason about during a hackathon.
 
 ## Live infrastructure evidence
 
-Read-only inspection on 2026-07-12 found Kubernetes v1.30.14 with:
+Live acceptance on 2026-07-17 found Kubernetes v1.30.14 with:
 
 - `cloud_s1` / `k8s-master`: Ready control plane, unschedulable to ordinary
   workloads because of its control-plane taint;
-- `cloud_s2` / `k8s-worker1`: 12 CPU, 15 GiB, `NotReady` since 2026-07-03;
+- `cloud_s2` / `k8s-worker1`: 12 CPU, 15 GiB, Ready;
 - `cloud_s3` / `k8s-worker2`: 12 CPU, 15 GiB, Ready;
 - local-path storage, nginx Ingress, MetalLB, and the existing
   `challenge-platform` plus per-user namespaces;
-- an existing queue-based runtime Job path with 2 CPU / 2560 MiB limits per
+- a queue-based runtime Job path with 4 CPU / 4096 MiB requests and limits per
   participant run.
 
-The showcase uses soft topology spread (`ScheduleAnyway`) so a dead worker does
-not deadlock the event. Resource requests, not optimistic live usage, are sized
-to the currently healthy worker.
+The showcase uses soft topology spread (`ScheduleAnyway`) so one unavailable
+worker does not deadlock the event. Resource requests, not optimistic live
+usage, control placement across both healthy workers.
 
 ## Empirical capacity boundary
 
@@ -60,6 +60,17 @@ uses 16 tags per sector: 21 nRF52840 machines per pod, 84 concurrently, and 252
 across all indexed completions. This is a measured safety correction, not a
 paper estimate.
 
-The committed pod limit is 3 CPU / 2560 MiB, so four concurrent sectors can use
-at most 10 GiB on the healthy 15 GiB worker. A full reference sector passed
-under that exact cap in the final acceptance run.
+Each sector requests 1.8 CPU / 4096 MiB and is limited to 3 CPU / 5120 MiB.
+With parallelism four, topology spread placed two sectors on each 15 GiB
+worker. The runtime caches the nRF52840 SVD locally, so isolated Jobs do not
+wait for network downloads or accumulate timeout output in Renode. The final
+showcase observes eight virtual seconds and uses no retry, so every indexed
+sector must satisfy coverage and rotation on its first execution. The measured
+seed-11 RF schedule caused pathological host-time growth, so the 12th sector
+reuses the validated seed-0 radio schedule while retaining its own sector ID,
+device IDs, addresses and cryptographic seeds.
+
+The final live acceptance completed all indexes `0-11` in about 24 minutes.
+All 12 pods used the same showcase digest, exited 0 on their first attempt, and
+reported 16/16 tags seen and rotated; the aggregate Job had zero failures and
+zero restarts.
