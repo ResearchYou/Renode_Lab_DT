@@ -26,14 +26,14 @@ statusul final trebuie verificat dupa fiecare publicare:
 | branch | `nrf52840-swarm/ghosttag-apocalypse` |
 | starter | 6 todo-uri, compileaza, dar pica testele |
 | referinta | trece testele native, zephyr si renode |
-| runtime student | nu contine `reference/` sau helperul privat de seed |
+| runtime student | nu expune `reference/` sau helperul privat de seed in explorer ori workspace |
 | runtime showcase | contine seed-ul de referinta separat |
 | scenariu live | `nrf52840-swarm-ghosttag-apocalypse` |
 | conturi | `initial` si `user1..user9` |
 | workspace | exact `firmware/`, `problem/`, `renode/` |
 
-valorile exacte pentru commit, digesturi si acceptanta live se completeaza in
-sectiunea `ultima acceptanta` dupa rollout.
+valorile exacte pentru commit, digesturi si acceptanta live sunt in sectiunea
+`ultima acceptanta`.
 
 ## ce este deja implementat de organizatori
 
@@ -295,16 +295,26 @@ nu folosim conturile studentilor pentru a rula solutia de referinta.
 
 ## ultima acceptanta
 
-de completat dupa rollout:
+acceptanta din 18 iulie 2026:
 
-- commit runtime: pending;
-- commit documentatie: pending;
-- digest participant: pending;
-- digest showcase: pending;
-- utilizatori reprovisionati: pending;
-- starter live: pending;
-- referinta live din `initial`: pending;
-- `initial` restaurat la skeleton: pending.
+- commit runtime: `28cd5971c798fd6b02419d626462d53da09b2838`;
+- commit documentatie: vezi commitul ocw publicat imediat dupa runtime;
+- digest participant:
+  `sha256:cca10144e4b069d6f5dfa01704fd4c7ea5857f50d04f079050cd71d9e827cd20`;
+- digest showcase:
+  `sha256:06fdaa3a15c9bcf488b2c14f5c418a8432085b461029d0ad831603df0ec00c5a`;
+- utilizatori reprovisionati: `initial` si `user1..user9`, toate cele 10 ide-uri
+  ready, toate workspace-urile verificate la acelasi skeleton;
+- starter live din `initial`: `protocol_contract_tests failures=94`,
+  `ghost_validation passed=0`, sse terminat cu exit 1;
+- referinta live din `initial`: `protocol_contract_tests failures=0`, ambele
+  build-uri zephyr reusite, renode exit 0, 6/6 tag-uri vazute, 6/6 rotite, 56
+  pachete rogue respinse, 30 replay-uri respinse, recovery la epoch 16 fara
+  reutilizare, energie 35/80, `ghost_validation passed=1`, sse exit 0;
+- raportul html si `validation.json` au fost verificate si arhivate;
+- `initial` a fost reprovisionat dupa acceptanta si verificat din nou: 6
+  todo-uri, zero fisiere reference si explorer cu `firmware/`, `problem/`,
+  `renode/`.
 
 ## fisiere importante
 
@@ -316,9 +326,10 @@ de completat dupa rollout:
 | `support/tests/test_protocol_contract.c` | contract complet imutabil |
 | `tests/test_protocol_contract.py` | referinta, starter si mutatii negative |
 | `ide/problem/problem.md` | enuntul studentului |
+| `docs/OCW_GHOSTTAG_CHALLENGE.md` | pagina ocw pentru studenti |
 | `reference/firmware/` | solutia organizatorilor |
 | `support/gateway/` | observer trusted si replay policy |
 | `docker/scripts/generate_swarm_resc.py` | power cut si atacatori |
 | `docker/scripts/validate_swarm.py` | criterii finale |
 | `docker/scripts/generate_report.py` | raport html |
-| `docs/hackathon_runbook.md` | rollout si rollback |
+| `docs/HACKATHON_RUNBOOK.md` | rollout si rollback |
