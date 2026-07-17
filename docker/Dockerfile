@@ -1,11 +1,7 @@
-FROM docker.io/library/ubuntu:24.04
+FROM docker.io/library/ubuntu:24.04 AS toolchain
 
 ARG RENODE_VERSION=1.16.1
 ARG ZEPHYR_VERSION=v4.4.1
-ARG VCS_REF=unknown
-
-LABEL org.opencontainers.image.title="GhostTag Apocalypse participant runtime" \
-      org.opencontainers.image.revision="${VCS_REF}"
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ZEPHYR_BASE=/opt/zephyrproject/zephyr
@@ -72,6 +68,23 @@ RUN python3 -m venv /opt/zephyr-venv \
     && west sdk install --install-dir /opt/zephyr-sdk \
          --gnu-toolchains arm-zephyr-eabi
 
+FROM toolchain AS gateway-protocol-builder
+
+COPY reference/firmware/ghost_protocol.c /tmp/gateway-protocol/ghost_protocol.c
+COPY reference/firmware/include/ghost_protocol.h /tmp/gateway-protocol/include/ghost_protocol.h
+RUN arm-zephyr-eabi-gcc -std=c17 -Os -ffunction-sections -fdata-sections \
+        -fno-common -mcpu=cortex-m4 -mthumb -mabi=aapcs \
+        -I /tmp/gateway-protocol/include \
+        -c /tmp/gateway-protocol/ghost_protocol.c \
+        -o /tmp/gateway-protocol/ghost_protocol.o
+
+FROM toolchain AS participant-runtime
+
+ARG VCS_REF=unknown
+
+LABEL org.opencontainers.image.title="GhostTag Apocalypse participant runtime" \
+      org.opencontainers.image.revision="${VCS_REF}"
+
 RUN mkdir -p /workspace/build /workspace/output /workspace/firmware \
     /workspace/firmware_seed /workspace/problem_seed /workspace/support \
     /workspace/renode
@@ -82,6 +95,8 @@ COPY docker/scripts/ /workspace/scripts/
 COPY firmware/ /workspace/firmware_seed/
 COPY ide/problem/ /workspace/problem_seed/
 COPY support/ /workspace/support/
+COPY --from=gateway-protocol-builder /tmp/gateway-protocol/ghost_protocol.o \
+    /workspace/support/gateway/ghost_protocol.o
 RUN chmod +x /workspace/scripts/*.sh /workspace/scripts/*.py
 
 ENTRYPOINT ["/bin/bash", "/workspace/scripts/entrypoint.sh"]

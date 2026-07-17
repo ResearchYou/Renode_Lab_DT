@@ -14,11 +14,11 @@ if(NOT DEFINED GHOST_SECTOR)
 endif()
 
 target_include_directories(app PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}/../../reference/firmware/include
+  /workspace/firmware_seed/include
 )
 target_sources(app PRIVATE
   main.c
-  ${CMAKE_CURRENT_LIST_DIR}/../../reference/firmware/ghost_protocol.c
+  ${CMAKE_CURRENT_LIST_DIR}/ghost_protocol.o
 )
 target_compile_definitions(app PRIVATE
   GHOST_TAG_COUNT=${GHOST_TAG_COUNT}
