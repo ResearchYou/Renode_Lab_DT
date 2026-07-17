@@ -92,12 +92,11 @@ RUN mkdir -p /workspace/build /workspace/output /workspace/firmware \
 
 WORKDIR /workspace
 
-COPY docker/scripts/ /workspace/scripts/
+COPY --chmod=0755 docker/scripts/ /workspace/scripts/
 COPY firmware/ /workspace/firmware_seed/
 COPY ide/problem/ /workspace/problem_seed/
 COPY support/ /workspace/support/
 COPY --from=gateway-protocol-builder /tmp/gateway-protocol/ghost_protocol.o \
     /workspace/support/gateway/ghost_protocol.o
-RUN chmod +x /workspace/scripts/*.sh /workspace/scripts/*.py
 
 ENTRYPOINT ["/bin/bash", "/workspace/scripts/entrypoint.sh"]
