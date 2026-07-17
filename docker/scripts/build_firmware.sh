@@ -115,6 +115,11 @@ set -e
 printf '%s\n' "$PROTOCOL_STATUS" >"$OUTPUT_DIR/protocol-tests.status"
 cat "$OUTPUT_DIR/protocol-tests.log"
 
+if [ "$PROTOCOL_STATUS" -ne 0 ]; then
+    echo "[FAIL] protocol contract tests failed; skipping firmware build and Renode"
+    exit 1
+fi
+
 echo "=== Building participant nRF52840 tag firmware (Zephyr) ==="
 west build -p always --cmake-only -b nrf52840dk/nrf52840 \
     -d "$BUILD_DIR/tag" "$FIRMWARE_DIR"
