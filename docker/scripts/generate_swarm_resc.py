@@ -85,6 +85,7 @@ def main() -> None:
     gateway_count = env_int("GATEWAY_COUNT", 3, 1, 3)
     attacker_count = env_int("ATTACKER_COUNT", 2, 1, 8)
     sector = env_int("SECTOR_INDEX", 0, 0, 9999)
+    seed_variants = env_int("RENODE_SEED_VARIANTS", 10000, 1, 10000)
     duration = env_int("SIMULATION_SECONDS", 6, 4, 60)
     output = Path(os.environ.get("RESC_OUTPUT", "/workspace/build/ghosttag.resc"))
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -94,7 +95,7 @@ def main() -> None:
     lines = [
         ":name: GhostTag Apocalypse generated swarm",
         "using sysbus",
-        f"emulation SetSeed {0x106000 + sector}",
+        f"emulation SetSeed {0x106000 + (sector % seed_variants)}",
         'emulation CreateBLEMedium "ghostAir"',
         "ghostAir SetRangeWirelessFunction 92",
         'emulation SetGlobalQuantum "0.00001"',

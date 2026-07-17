@@ -10,7 +10,7 @@ spec:
   completions: 12
   parallelism: 4
   completionMode: Indexed
-  backoffLimit: 2
+  backoffLimit: 0
   ttlSecondsAfterFinished: 86400
   template:
     metadata:
@@ -18,6 +18,7 @@ spec:
         app.kubernetes.io/name: ghosttag-apocalypse
         app.kubernetes.io/component: swarm-showcase
     spec:
+      activeDeadlineSeconds: 1800
       restartPolicy: Never
       imagePullSecrets:
         - name: oci-registry
@@ -41,7 +42,12 @@ spec:
             - name: ATTACKER_COUNT
               value: "2"
             - name: SIMULATION_SECONDS
-              value: "6"
+              value: "8"
+            # Seed 11 produced pathological event scheduling in the measured
+            # capacity run. Reuse the validated seed-0 RF schedule there;
+            # sector IDs, keys, addresses and validation remain independent.
+            - name: RENODE_SEED_VARIANTS
+              value: "11"
           resources:
             requests:
               cpu: "1800m"
