@@ -9,6 +9,7 @@ FIRMWARE_DIR="${FIRMWARE_DIR:-/workspace/firmware}"
 SEED_DIR="/workspace/firmware_seed"
 GATEWAY_DIR="/workspace/support/gateway"
 TEST_FILE="/workspace/support/tests/test_protocol_contract.c"
+SOURCE_SNAPSHOT_DIR="$BUILD_DIR/participant-source"
 
 if ! [[ "$TAG_COUNT" =~ ^[0-9]+$ ]] || (( TAG_COUNT < 1 || TAG_COUNT > 64 )); then
     echo "[ERROR] TAG_COUNT must be an integer from 1 through 64" >&2
@@ -39,13 +40,27 @@ if [ ! -f "$TEST_FILE" ]; then
     exit 2
 fi
 
+if find "$FIRMWARE_DIR" -type l -print -quit | grep -q .; then
+    echo "[ERROR] symbolic links are not allowed in participant firmware" >&2
+    exit 2
+fi
+
 export ZEPHYR_BASE="${ZEPHYR_BASE:-/opt/zephyrproject/zephyr}"
 export ZEPHYR_TOOLCHAIN_VARIANT="${ZEPHYR_TOOLCHAIN_VARIANT:-zephyr}"
 export ZEPHYR_SDK_INSTALL_DIR="${ZEPHYR_SDK_INSTALL_DIR:-/opt/zephyr-sdk}"
 export PATH="/opt/zephyr-venv/bin:$PATH"
 
 mkdir -p "$BUILD_DIR" "$OUTPUT_DIR"
-rm -rf "$BUILD_DIR/tag" "$BUILD_DIR/gateway" "$BUILD_DIR/protocol-tests"
+rm -rf "$BUILD_DIR/tag" "$BUILD_DIR/gateway" "$BUILD_DIR/protocol-tests" \
+    "$SOURCE_SNAPSHOT_DIR"
+mkdir -p "$SOURCE_SNAPSHOT_DIR"
+cp -a "$FIRMWARE_DIR/." "$SOURCE_SNAPSHOT_DIR/"
+# The build host and cluster can temporarily disagree after a power outage.
+# Build from a writable snapshot whose timestamps use the runner clock, so
+# future mtimes from the image or PVC cannot make Ninja re-run CMake forever.
+find "$SOURCE_SNAPSHOT_DIR" -depth -exec touch -- {} +
+FIRMWARE_DIR="$SOURCE_SNAPSHOT_DIR"
+
 mkdir -p "$BUILD_DIR/protocol-tests"
 
 echo "=== Host known-answer and tamper tests ==="
