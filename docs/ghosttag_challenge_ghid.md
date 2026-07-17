@@ -43,7 +43,7 @@ status verificat la 2026-07-18:
 | imagine GhostTag in registry | confirmata | digest participant `cd4ed4bafd24`, digest showcase `d6d69c681e81`, ambele cu label `4889c2e` |
 | suprafata participant live | verificata | workspace-ul `initial` arata exact `firmware/`, `problem/` si `renode/`; hashurile coincid cu imaginea; nu expune referinta sau derivarea seed-urilor |
 | showcase GhostTag | trecut | acceptanta 12/12 a trecut pe digestul anterior; runtime-ul curent a trecut smoke-ul complet local cu 6/6 tag-uri si referinta |
-| utilizatori test live | eliminati | credentialele contin numai `initial`; namespace-urile `user1..user10` au fost sterse si nu au fost recreate |
+| utilizatori studenti live | provisionati | `user1..user9` au aceeasi parola de eveniment, IDE-urile sunt Ready si loginurile au fost verificate; `user10` nu exista |
 
 ## ce este deja implementat
 
@@ -267,7 +267,8 @@ Matricea locala obligatorie demonstreaza si cazurile care nu trebuie acceptate:
 - modificarea `main.c`, header-ului, CMake sau `prj.conf`.
 
 Dupa validare stergem utilizatorii si namespace-urile disposable. Lotul pentru
-studenti se provisionaza din nou numai cand deschidem accesul.
+studenti se provisionaza din nou numai cand deschidem accesul. Lotul curent
+`user1..user9` este provisionat si verificat live.
 
 Comenzile operationale complete sunt in
 [`docs/HACKATHON_RUNBOOK.md`](HACKATHON_RUNBOOK.md).
@@ -343,9 +344,10 @@ Challenge-ul poate fi deschis studentilor cand toate punctele sunt adevarate:
 - [x] raportul HTML se incarca in Results;
 - [x] rollback-ul este pregatit;
 - [x] solutia de referinta nu este accesibila participantilor.
+- [x] `user1..user9` sunt provisionati si fiecare login ajunge in IDE.
 
 workspace-ul live `initial` a fost readus la starter dupa testul pozitiv.
-utilizatorii `user1..user10` raman scosi pana la reprovisionarea planificata.
+utilizatorii `user1..user9` sunt activi; `user10` nu este provisionat.
 
 ## fisiere importante
 
