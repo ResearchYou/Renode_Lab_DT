@@ -50,6 +50,37 @@ export ZEPHYR_TOOLCHAIN_VARIANT="${ZEPHYR_TOOLCHAIN_VARIANT:-zephyr}"
 export ZEPHYR_SDK_INSTALL_DIR="${ZEPHYR_SDK_INSTALL_DIR:-/opt/zephyr-sdk}"
 export PATH="/opt/zephyr-venv/bin:$PATH"
 
+build_after_cmake() {
+    local build_dir="$1"
+    local runner_epoch latest_epoch latest_input input_path input_epoch
+
+    runner_epoch="$(date +%s)"
+    latest_epoch="$runner_epoch"
+    latest_input="runner clock"
+
+    while IFS= read -r input_path; do
+        if [[ "$input_path" != /* ]]; then
+            input_path="$build_dir/$input_path"
+        fi
+        if [ -e "$input_path" ]; then
+            input_epoch="$(stat -c %Y -- "$input_path")"
+            if (( input_epoch > latest_epoch )); then
+                latest_epoch="$input_epoch"
+                latest_input="$input_path"
+            fi
+        fi
+    done < <(ninja -C "$build_dir" -t inputs build.ninja 2>/dev/null)
+
+    # Ninja regenerates CMake forever when an image was built on a host whose
+    # clock is ahead of the cluster. Keep the generated manifest one second
+    # newer than its newest declared CMake input, without rewriting the SDK.
+    touch -d "@$((latest_epoch + 1))" "$build_dir/build.ninja"
+    if (( latest_epoch > runner_epoch )); then
+        echo "[INFO] clock skew guarded for CMake input: $latest_input"
+    fi
+    ninja -C "$build_dir"
+}
+
 mkdir -p "$BUILD_DIR" "$OUTPUT_DIR"
 rm -rf "$BUILD_DIR/tag" "$BUILD_DIR/gateway" "$BUILD_DIR/protocol-tests" \
     "$SOURCE_SNAPSHOT_DIR"
@@ -85,16 +116,18 @@ printf '%s\n' "$PROTOCOL_STATUS" >"$OUTPUT_DIR/protocol-tests.status"
 cat "$OUTPUT_DIR/protocol-tests.log"
 
 echo "=== Building participant nRF52840 tag firmware (Zephyr) ==="
-west build -p always -b nrf52840dk/nrf52840 \
+west build -p always --cmake-only -b nrf52840dk/nrf52840 \
     -d "$BUILD_DIR/tag" "$FIRMWARE_DIR"
+build_after_cmake "$BUILD_DIR/tag"
 
 TAG_ID_BASE=$((SECTOR_INDEX * TAG_COUNT))
 echo "=== Building trusted observer gateway firmware ==="
-west build -p always -b nrf52840dk/nrf52840 \
+west build -p always --cmake-only -b nrf52840dk/nrf52840 \
     -d "$BUILD_DIR/gateway" "$GATEWAY_DIR" -- \
     -DGHOST_TAG_COUNT="$TAG_COUNT" \
     -DGHOST_TAG_ID_BASE="$TAG_ID_BASE" \
     -DGHOST_SECTOR="$SECTOR_INDEX"
+build_after_cmake "$BUILD_DIR/gateway"
 
 test -s "$BUILD_DIR/tag/zephyr/zephyr.elf"
 test -s "$BUILD_DIR/gateway/zephyr/zephyr.elf"
