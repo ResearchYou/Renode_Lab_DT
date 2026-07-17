@@ -1,0 +1,11 @@
+ARG PARTICIPANT_IMAGE=renode_dt-digital-twin:nrf52840-swarm-ghosttag-apocalypse
+FROM ${PARTICIPANT_IMAGE}
+
+ARG VCS_REF=unknown
+
+LABEL org.opencontainers.image.title="GhostTag Apocalypse reference showcase runtime" \
+      org.opencontainers.image.revision="${VCS_REF}"
+
+# This organizer-only derivative replaces the starter seed with the reference
+# protocol. The participant runtime never receives the reference sources.
+COPY reference/firmware/ /workspace/firmware_seed/

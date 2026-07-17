@@ -48,6 +48,7 @@ Modes:
 
 Images (default: all):
   digital-twin
+  showcase
   ide
 
 For normal pushes, authenticate once with:
@@ -90,9 +91,9 @@ fi
 
 for _img in "${IMAGES[@]}"; do
     case "$_img" in
-        digital-twin|ide) ;;
+        digital-twin|showcase|ide) ;;
         *)
-            echo "push-platform-images: unknown image '${_img}'; valid: digital-twin ide" >&2
+            echo "push-platform-images: unknown image '${_img}'; valid: digital-twin showcase ide" >&2
             exit 2
             ;;
     esac
@@ -113,6 +114,7 @@ cleanup() {
         rm -f "$SSH_TUNNEL_LOG"
     fi
     rm -f /tmp/push-platform-digital-twin.tar.gz \
+          /tmp/push-platform-showcase.tar.gz \
           /tmp/push-platform-ide.tar.gz \
           /tmp/push-platform-creds.json
 }
@@ -205,13 +207,34 @@ build_images() {
         return
     fi
 
-    ./run.sh build "${IMAGES[@]}"
+    local compose_images=()
+    has_image digital-twin && compose_images+=(digital-twin)
+    has_image ide && compose_images+=(ide)
+    if [ "${#compose_images[@]}" -gt 0 ]; then
+        ./run.sh build "${compose_images[@]}"
+    fi
+
+    if has_image showcase; then
+        if ! docker image inspect renode_dt-digital-twin:latest >/dev/null 2>&1; then
+            echo "push-platform-images: showcase requires local renode_dt-digital-twin:latest" >&2
+            echo "push-platform-images: build/select digital-twin first" >&2
+            exit 1
+        fi
+        docker build --network host \
+            --build-arg PARTICIPANT_IMAGE=renode_dt-digital-twin:latest \
+            -f docker/Dockerfile.showcase \
+            -t renode_dt-digital-twin-showcase:latest .
+    fi
 }
 
 tag_images() {
     if has_image digital-twin; then
         docker tag renode_dt-digital-twin:latest "${PLATFORM_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}"
         docker tag renode_dt-digital-twin:latest "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}"
+    fi
+    if has_image showcase; then
+        docker tag renode_dt-digital-twin-showcase:latest "${PLATFORM_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}-showcase"
+        docker tag renode_dt-digital-twin-showcase:latest "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}-showcase"
     fi
     if has_image ide; then
         docker tag renode_dt-ide:latest "${PLATFORM_REGISTRY}/${PLATFORM_NAMESPACE}/ide:latest"
@@ -255,6 +278,7 @@ PY
 push_images() {
     use_tunnel_auth
     has_image digital-twin && docker push "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}"
+    has_image showcase     && docker push "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}-showcase"
     has_image ide           && docker push "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/ide:latest"
 }
 
@@ -273,6 +297,10 @@ rsync_save_images() {
     if has_image digital-twin; then
         echo "push-platform-images: saving digital-twin (may take a few minutes)..."
         docker save renode_dt-digital-twin:latest | gzip > /tmp/push-platform-digital-twin.tar.gz
+    fi
+    if has_image showcase; then
+        echo "push-platform-images: saving showcase image (may take a few minutes)..."
+        docker save renode_dt-digital-twin-showcase:latest | gzip > /tmp/push-platform-showcase.tar.gz
     fi
     if has_image ide; then
         echo "push-platform-images: saving ide..."
@@ -304,6 +332,7 @@ PY
 rsync_transfer() {
     local files=(/tmp/push-platform-creds.json)
     has_image digital-twin && files+=(/tmp/push-platform-digital-twin.tar.gz)
+    has_image showcase && files+=(/tmp/push-platform-showcase.tar.gz)
     has_image ide           && files+=(/tmp/push-platform-ide.tar.gz)
 
     echo "push-platform-images: rsyncing to ${SSH_HOST}..."
@@ -323,12 +352,18 @@ cp /tmp/push-platform-creds.json "${DOCKER_CONFIG}/config.json"
 export DOCKER_CONFIG
 
 has_image digital-twin && docker load < /tmp/push-platform-digital-twin.tar.gz
+has_image showcase     && docker load < /tmp/push-platform-showcase.tar.gz
 has_image ide           && docker load < /tmp/push-platform-ide.tar.gz
 
 if has_image digital-twin; then
     docker tag renode_dt-digital-twin:latest "${REMOTE_REGISTRY}/${NS}/digital-twin:${TAG}"
     docker push --quiet "${REMOTE_REGISTRY}/${NS}/digital-twin:${TAG}"
     docker rmi "${REMOTE_REGISTRY}/${NS}/digital-twin:${TAG}" 2>/dev/null || true
+fi
+if has_image showcase; then
+    docker tag renode_dt-digital-twin-showcase:latest "${REMOTE_REGISTRY}/${NS}/digital-twin:${TAG}-showcase"
+    docker push --quiet "${REMOTE_REGISTRY}/${NS}/digital-twin:${TAG}-showcase"
+    docker rmi "${REMOTE_REGISTRY}/${NS}/digital-twin:${TAG}-showcase" 2>/dev/null || true
 fi
 if has_image ide; then
     docker tag renode_dt-ide:latest "${REMOTE_REGISTRY}/${NS}/ide:latest"

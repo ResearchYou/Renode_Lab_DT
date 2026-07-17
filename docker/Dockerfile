@@ -2,6 +2,10 @@ FROM docker.io/library/ubuntu:24.04
 
 ARG RENODE_VERSION=1.16.1
 ARG ZEPHYR_VERSION=v4.4.1
+ARG VCS_REF=unknown
+
+LABEL org.opencontainers.image.title="GhostTag Apocalypse participant runtime" \
+      org.opencontainers.image.revision="${VCS_REF}"
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ZEPHYR_BASE=/opt/zephyrproject/zephyr
@@ -70,7 +74,7 @@ RUN python3 -m venv /opt/zephyr-venv \
 
 RUN mkdir -p /workspace/build /workspace/output /workspace/firmware \
     /workspace/firmware_seed /workspace/problem_seed /workspace/support \
-    /workspace/reference /workspace/renode
+    /workspace/renode
 
 WORKDIR /workspace
 
@@ -78,7 +82,6 @@ COPY docker/scripts/ /workspace/scripts/
 COPY firmware/ /workspace/firmware_seed/
 COPY ide/problem/ /workspace/problem_seed/
 COPY support/ /workspace/support/
-COPY reference/ /workspace/reference/
 RUN chmod +x /workspace/scripts/*.sh /workspace/scripts/*.py
 
 ENTRYPOINT ["/bin/bash", "/workspace/scripts/entrypoint.sh"]

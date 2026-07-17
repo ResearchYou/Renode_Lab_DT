@@ -8,7 +8,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-/workspace/output}"
 FIRMWARE_DIR="${FIRMWARE_DIR:-/workspace/firmware}"
 SEED_DIR="/workspace/firmware_seed"
 GATEWAY_DIR="/workspace/support/gateway"
-TEST_FILE="$FIRMWARE_DIR/tests/test_protocol.c"
+TEST_FILE="/workspace/support/tests/test_protocol_contract.c"
 
 if ! [[ "$TAG_COUNT" =~ ^[0-9]+$ ]] || (( TAG_COUNT < 1 || TAG_COUNT > 64 )); then
     echo "[ERROR] TAG_COUNT must be an integer from 1 through 64" >&2
@@ -22,8 +22,21 @@ if [ ! -f "$FIRMWARE_DIR/CMakeLists.txt" ]; then
     echo "[INFO] writable firmware mount is empty; using image seed"
     FIRMWARE_DIR="$SEED_DIR"
 fi
+
+# Only ghost_protocol.c is participant-controlled. Keeping the application,
+# header, and Zephyr build contract immutable prevents bypassing the protocol
+# checks by weakening the broadcaster or changing packet constants.
+for contract_file in CMakeLists.txt prj.conf main.c include/ghost_protocol.h; do
+    if ! cmp -s "$FIRMWARE_DIR/$contract_file" "$SEED_DIR/$contract_file"; then
+        echo "[ERROR] participant changed contract-controlled file: $contract_file" >&2
+        echo "[ERROR] edit only firmware/ghost_protocol.c" >&2
+        exit 2
+    fi
+done
+
 if [ ! -f "$TEST_FILE" ]; then
-    TEST_FILE="$SEED_DIR/tests/test_protocol.c"
+    echo "[ERROR] immutable protocol contract test is missing: $TEST_FILE" >&2
+    exit 2
 fi
 
 export ZEPHYR_BASE="${ZEPHYR_BASE:-/opt/zephyrproject/zephyr}"

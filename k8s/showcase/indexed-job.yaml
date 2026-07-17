@@ -31,7 +31,7 @@ spec:
               app.kubernetes.io/component: swarm-showcase
       containers:
         - name: city-sector
-          image: oci.cyb3rhell.com/challenge-platform/digital-twin:nrf52840-swarm-ghosttag-apocalypse
+          image: oci.cyb3rhell.com/challenge-platform/digital-twin:nrf52840-swarm-ghosttag-apocalypse-showcase
           imagePullPolicy: Always
           env:
             - name: TAG_COUNT
