@@ -20,23 +20,27 @@ certificarea radio sau evaluarea completa de confidentialitate.
 
 ## status curent
 
-status verificat la 2026-07-15:
+status verificat la 2026-07-17:
 
 | componenta | status | observatii |
 |---|---|---|
-| codul challenge-ului | gata | commit local `29a2b3d` pe branch-ul `nrf52840-swarm/ghosttag-apocalypse` |
+| codul challenge-ului | gata | runtime-ul validat este construit din commit-ul `5c1bf54` pe branch-ul `nrf52840-swarm/ghosttag-apocalypse` |
 | starter pentru studenti | gata | contine exact 3 TODO-uri in `firmware/ghost_protocol.c` |
 | implementare de referinta | gata | se afla in `reference/firmware/`; nu trebuie oferita studentilor |
-| teste native | gata | vectori SipHash, rotatie, tamper, seed gresit si verificare de leakage |
+| teste native | gata | 64 vectori SipHash, vector complet de payload, tamper pe fiecare byte, header/EID/MAC, seed, sector si leakage |
 | build Zephyr | gata | tag si gateway pentru `nrf52840dk/nrf52840` |
 | simulare Renode | gata | tag-uri, gateway-uri, clone, pozitii si raza BLE determinista |
 | validator si raport | gata | produce `validation.json` si `output/report.html` |
 | integrare cu platforma | gata in repository | exista manifest pentru scenariu si Job-ul de showcase |
-| validare locala de referinta | trecuta | ultima evidenta locala: 6/6 tag-uri, 6/6 rotite, 75 pachete rogue respinse |
+| matrice pozitiva si negativa | trecuta | referinta trece; starter-ul si 9 mutatii invalide pica; modificarea contractului pica cu exit 2 |
+| validare locala de referinta | trecuta | 6/6 tag-uri, 6/6 rotite, 75 pachete rogue respinse, raport HTML generat |
+| imagine studenti | gata local | sursa de referinta este absenta; gateway-ul foloseste numai un obiect ARM precompilat |
+| imagine showcase | gata local | seed separat cu referinta; smoke test-ul fara mount trece complet |
 | cluster Kubernetes | sanatos | toate cele 3 noduri sunt `Ready`, fara poduri defecte, health public 200 |
 | scenariu activ pentru studenti | nu | platforma foloseste inca `rp2040-sensor-filter-tinyml` |
-| imagine GhostTag in registry | neconfirmata | imaginea trebuie reconstruita, impinsa si verificata inainte de activare |
+| imagine GhostTag in registry | confirmata | ambele tag-uri au digest, label de commit si pull real reusit pe cei doi workeri |
 | showcase GhostTag | nu ruleaza | Job-ul `ghosttag-apocalypse` este absent |
+| utilizatori test live | eliminati | lotul `user1..user10` si namespace-urile lui au fost sterse; a ramas `initial` |
 
 ## ce este deja implementat
 
@@ -76,17 +80,23 @@ la rollback.
 
 La fiecare Run se executa, in ordine:
 
-1. compilare nativa C17 cu `-Wall -Wextra -Werror`;
-2. vectorii cunoscuti SipHash si testele de tamper;
-3. build Zephyr pentru firmware-ul tag-ului;
-4. build Zephyr pentru gateway-ul trusted;
-5. generarea sectorului Renode;
-6. pornirea masinilor nRF52840 pe mediul BLE;
-7. colectarea logurilor UART ale gateway-urilor;
-8. validarea flotei si generarea raportului HTML.
+1. verificarea ca numai `firmware/ghost_protocol.c` a fost schimbat;
+2. compilare nativa C17 cu `-Wall -Wextra -Werror`;
+3. 64 vectori SipHash, vectorul complet de payload si testele de contract;
+4. tamper pe fiecare dintre cei 28 bytes si cazuri resemnate invalide;
+5. build Zephyr pentru firmware-ul tag-ului;
+6. build Zephyr pentru gateway-ul trusted;
+7. generarea sectorului Renode;
+8. pornirea masinilor nRF52840 pe mediul BLE;
+9. colectarea logurilor UART ale gateway-urilor;
+10. validarea flotei si generarea raportului HTML.
 
 Validatorul foloseste numai traficul observat de gateway-uri. Nu citeste
 variabilele c ale studentului si nu inspecteaza memoria tag-urilor.
+
+Testul de contract este in imagine si nu poate fi inlocuit din workspace.
+Gateway-ul foloseste un obiect ARM precompilat. Imaginea studentilor nu contine
+directorul `reference/` si nu contine sursa implementarii organizatorilor.
 
 ### scara scenariului
 
@@ -130,7 +140,7 @@ firmware/ghost_protocol.c
 Nu trebuie schimbate header-ul, dimensiunea pachetului, CMake, gateway-ul,
 formatul UART, durata epoch-ului sau harness-ul de testare.
 
-### TODO 1 - SipHash-2-4
+### todo 1 - siphash-2-4
 
 Studentul implementeaza `ghost_siphash24`:
 
@@ -143,7 +153,7 @@ Studentul implementeaza `ghost_siphash24`:
 
 O implementare aproximativa sau cu ordinea gresita a bytes-ilor nu trece.
 
-### TODO 2 - construirea payload-ului
+### todo 2 - construirea payload-ului
 
 Studentul completeaza `ghost_build_payload`:
 
@@ -157,7 +167,7 @@ Studentul completeaza `ghost_build_payload`:
 
 Aceeasi cheie bruta nu trebuie refolosita direct pentru ambele roluri.
 
-### TODO 3 - verificarea payload-ului
+### todo 3 - verificarea payload-ului
 
 Studentul completeaza `ghost_verify_payload` astfel incat sa respinga:
 
@@ -221,6 +231,20 @@ Testul disposable trebuie sa demonstreze ambele directii:
 - implementarea de referinta trece complet;
 - raportul apare in Results;
 - fisierele vechi sunt arhivate la schimbarea scenariului.
+
+Matricea locala obligatorie demonstreaza si cazurile care nu trebuie acceptate:
+
+- starter fara TODO-uri implementate;
+- SipHash gresit;
+- EID fara epoch, sector sau seed;
+- seed stabil folosit ca EID;
+- aceeasi cheie bruta folosita pentru EID si MAC;
+- verificare de header, EID sau MAC eliminata;
+- implementare `accept-all`;
+- modificarea `main.c`, header-ului, CMake sau `prj.conf`.
+
+Dupa validare stergem utilizatorii si namespace-urile disposable. Lotul pentru
+studenti se provisionaza din nou numai cand deschidem accesul.
 
 Comenzile operationale complete sunt in
 [`docs/HACKATHON_RUNBOOK.md`](HACKATHON_RUNBOOK.md).
@@ -308,10 +332,13 @@ showcase-ul inainte de testul disposable.
 | `firmware/ghost_protocol.c` | singurul fisier editat de student |
 | `firmware/include/ghost_protocol.h` | contractul wire si API-ul |
 | `firmware/tests/test_protocol.c` | testele publice native |
+| `support/tests/test_protocol_contract.c` | contractul complet si nemodificabil |
+| `tests/test_protocol_contract.py` | referinta, starter si cele 9 mutatii negative |
 | `ide/problem/problem.md` | enuntul complet afisat in browser |
 | `reference/firmware/` | solutia organizatorilor |
 | `support/gateway/` | gateway-ul trusted |
 | `docker/scripts/build_firmware.sh` | teste native si build-uri Zephyr |
+| `docker/Dockerfile.showcase` | imaginea separata, numai pentru organizatori |
 | `docker/scripts/generate_swarm_resc.py` | generarea topologiei Renode |
 | `docker/scripts/validate_swarm.py` | criteriile automate de acceptare |
 | `docker/scripts/generate_report.py` | raportul HTML |

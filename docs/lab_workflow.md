@@ -17,7 +17,8 @@ trusted gateway C         -> generated Renode city-sector script
 ```
 
 `docker/scripts/build_firmware.sh` builds both ELFs. The participant source is
-read from the per-user firmware PVC; the gateway and reference protocol live in
+read from the per-user firmware PVC; the gateway verifier is linked from a
+precompiled organizer object and the immutable protocol tests live in
 the immutable image.
 
 `docker/scripts/generate_swarm_resc.py` expands environment settings into a

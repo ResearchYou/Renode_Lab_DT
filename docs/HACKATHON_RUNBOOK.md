@@ -39,11 +39,26 @@ nrf52840-swarm/ghosttag-apocalypse
 -> nrf52840-swarm-ghosttag-apocalypse
 ```
 
-Build and smoke-test with six tags before pushing:
+Build both images from the exact commit. The participant image does not contain
+the reference source. The organizer-only showcase image replaces only the
+firmware seed:
 
 ```bash
+VCS_REF="$(git rev-parse HEAD)"
 podman build -f docker/Dockerfile \
+  --build-arg VCS_REF="$VCS_REF" \
   -t renode_dt-digital-twin:nrf52840-swarm-ghosttag-apocalypse .
+
+podman build -f docker/Dockerfile.showcase \
+  --build-arg PARTICIPANT_IMAGE=renode_dt-digital-twin:nrf52840-swarm-ghosttag-apocalypse \
+  --build-arg VCS_REF="$VCS_REF" \
+  -t renode_dt-digital-twin-showcase:nrf52840-swarm-ghosttag-apocalypse .
+```
+
+Run the mutation matrix, then the complete reference smoke test:
+
+```bash
+pytest -q tests/test_protocol_contract.py
 
 mkdir -p output
 podman run --rm \
@@ -53,7 +68,20 @@ podman run --rm \
   renode_dt-digital-twin:nrf52840-swarm-ghosttag-apocalypse
 ```
 
-Do not push unless the run ends with `GHOSTTAG FLEET SURVIVED THE APOCALYPSE`.
+The pytest matrix requires the reference to pass and the starter plus all
+invalid protocol mutations to fail. Also run the participant image with the
+starter and require a non-zero exit. Do not push unless the reference run ends
+with `GHOSTTAG FLEET SURVIVED THE APOCALYPSE`.
+
+Smoke-test the organizer-only seed without a firmware mount:
+
+```bash
+podman run --rm \
+  -e TAG_COUNT=6 -e SIMULATION_SECONDS=6 \
+  -v "$PWD/output:/workspace/output:Z" \
+  renode_dt-digital-twin-showcase:nrf52840-swarm-ghosttag-apocalypse
+```
+
 The validated runtime image is approximately 3.76 GB, so confirm registry and
 node image-storage headroom before the event.
 
@@ -62,12 +90,13 @@ daemon and registry tunnel. If Docker is running, use the explicit tag so the
 currently active old scenario does not choose the wrong image name:
 
 ```bash
-SCENARIO_TAG=nrf52840-swarm-ghosttag-apocalypse \
-  ./push-platform-images.sh push digital-twin
+BUILD=0 PUSH_ENGINE=podman \
+  SCENARIO_TAG=nrf52840-swarm-ghosttag-apocalypse \
+  ./push-platform-images.sh push digital-twin showcase
 ```
 
-After push, verify the manifest through the registry API or with a pull from a
-cluster node. Do not treat a local tag as proof that the registry has it.
+After push, verify both manifests through the registry API or with pulls from a
+cluster node. Do not treat local tags as proof that the registry has them.
 
 ## 3. Server-side dry run
 
@@ -96,6 +125,9 @@ Run produces a queued Job, and `output/report.html` loads in the panel.
 
 The starter must fail cleanly. A disposable reference mount must pass. This
 proves both negative and positive challenge paths.
+
+Remove all disposable logins and namespaces after the test. Recreate the event
+user batch only when the organizers are ready to open access.
 
 ## 5. Launch the showcase
 

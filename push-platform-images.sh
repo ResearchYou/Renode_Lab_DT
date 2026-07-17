@@ -27,6 +27,7 @@ PLATFORM_REGISTRY="${PLATFORM_REGISTRY:-oci.cyb3rhell.com}"
 PLATFORM_NAMESPACE="${PLATFORM_NAMESPACE:-challenge-platform}"
 
 BUILD="${BUILD:-1}"
+PUSH_ENGINE="${PUSH_ENGINE:-docker}"
 
 MODE="${1:-push}"
 LOCAL_REGISTRY="${LOCAL_REGISTRY_HOST}:${LOCAL_REGISTRY_PORT}"
@@ -60,6 +61,7 @@ rsync-push prerequisites (one-time on the server):
 
 Environment overrides:
   BUILD=0                         skip docker compose build
+  PUSH_ENGINE=docker|podman       build and push engine (default: docker)
   SCENARIO_TAG=tag                 override detected active scenario tag
   LOCAL_REGISTRY_PORT=5002         use a different local tunnel port
   SSH_HOST=server                  SSH host that can reach the registry LXC
@@ -79,6 +81,14 @@ case "$MODE" in
     push|rsync-push|login|tunnel) ;;
     *)
         usage >&2
+        exit 2
+        ;;
+esac
+
+case "$PUSH_ENGINE" in
+    docker|podman) ;;
+    *)
+        echo "push-platform-images: PUSH_ENGINE must be docker or podman" >&2
         exit 2
         ;;
 esac
@@ -207,6 +217,32 @@ build_images() {
         return
     fi
 
+    if [ "$PUSH_ENGINE" = "podman" ]; then
+        local vcs_ref
+        vcs_ref="$(git rev-parse HEAD)"
+        if has_image digital-twin; then
+            podman build --network host -f docker/Dockerfile \
+                --build-arg VCS_REF="$vcs_ref" \
+                -t "renode_dt-digital-twin:${SCENARIO_TAG}" .
+        fi
+        if has_image showcase; then
+            if ! podman image inspect "renode_dt-digital-twin:${SCENARIO_TAG}" >/dev/null 2>&1; then
+                echo "push-platform-images: showcase requires renode_dt-digital-twin:${SCENARIO_TAG}" >&2
+                echo "push-platform-images: build/select digital-twin first" >&2
+                exit 1
+            fi
+            podman build --network host -f docker/Dockerfile.showcase \
+                --build-arg PARTICIPANT_IMAGE="renode_dt-digital-twin:${SCENARIO_TAG}" \
+                --build-arg VCS_REF="$vcs_ref" \
+                -t "renode_dt-digital-twin-showcase:${SCENARIO_TAG}" .
+        fi
+        if has_image ide; then
+            podman build --network host -f docker/Dockerfile.ide \
+                -t renode_dt-ide:latest .
+        fi
+        return
+    fi
+
     local compose_images=()
     has_image digital-twin && compose_images+=(digital-twin)
     has_image ide && compose_images+=(ide)
@@ -228,6 +264,9 @@ build_images() {
 }
 
 tag_images() {
+    if [ "$PUSH_ENGINE" = "podman" ]; then
+        return
+    fi
     if has_image digital-twin; then
         docker tag renode_dt-digital-twin:latest "${PLATFORM_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}"
         docker tag renode_dt-digital-twin:latest "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}"
@@ -277,9 +316,33 @@ PY
 
 push_images() {
     use_tunnel_auth
+    if [ "$PUSH_ENGINE" = "podman" ]; then
+        command -v skopeo >/dev/null || {
+            echo "push-platform-images: skopeo is required for PUSH_ENGINE=podman" >&2
+            exit 1
+        }
+        local authfile="${DOCKER_CONFIG}/config.json"
+        if has_image digital-twin; then
+            skopeo copy --authfile "$authfile" --dest-tls-verify=false \
+                "containers-storage:localhost/renode_dt-digital-twin:${SCENARIO_TAG}" \
+                "docker://${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}"
+        fi
+        if has_image showcase; then
+            skopeo copy --authfile "$authfile" --dest-tls-verify=false \
+                "containers-storage:localhost/renode_dt-digital-twin-showcase:${SCENARIO_TAG}" \
+                "docker://${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}-showcase"
+        fi
+        if has_image ide; then
+            skopeo copy --authfile "$authfile" --dest-tls-verify=false \
+                containers-storage:localhost/renode_dt-ide:latest \
+                "docker://${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/ide:latest"
+        fi
+        return
+    fi
+
     has_image digital-twin && docker push "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}"
     has_image showcase     && docker push "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/digital-twin:${SCENARIO_TAG}-showcase"
-    has_image ide           && docker push "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/ide:latest"
+    has_image ide          && docker push "${LOCAL_REGISTRY}/${PLATFORM_NAMESPACE}/ide:latest"
 }
 
 login_registry() {
@@ -376,6 +439,10 @@ REMOTE
 }
 
 rsync_push_flow() {
+    if [ "$PUSH_ENGINE" != "docker" ]; then
+        echo "push-platform-images: rsync-push currently requires PUSH_ENGINE=docker" >&2
+        exit 2
+    fi
     trap cleanup EXIT INT TERM
     build_images
     rsync_save_images
@@ -395,6 +462,7 @@ push-platform-images:
   push endpoint:     ${LOCAL_REGISTRY}
   tunnel target:     ${SSH_HOST} / CT ${REGISTRY_LXC_ID} -> ${REMOTE_REGISTRY}
   docker host:       ${DOCKER_HOST:-default context}
+  push engine:       ${PUSH_ENGINE}
 EOF
 
 check_remote_registry
