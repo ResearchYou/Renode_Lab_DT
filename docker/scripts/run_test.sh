@@ -3,6 +3,8 @@ set -uo pipefail
 
 OUTPUT_DIR="${OUTPUT_DIR:-/workspace/output}"
 RESC_FILE="${RESC_FILE:-/workspace/build/ghosttag.resc}"
+MONO_GC_PARAMS="${MONO_GC_PARAMS:-soft-heap-limit=2g}"
+export MONO_GC_PARAMS
 mkdir -p "$OUTPUT_DIR"
 rm -f "$OUTPUT_DIR"/gateway-*.log "$OUTPUT_DIR/tag-sample.log" \
       "$OUTPUT_DIR/renode.log" "$OUTPUT_DIR/validation.json" \
@@ -12,6 +14,7 @@ echo "=== Generating deterministic BLE city sector ==="
 RESC_OUTPUT="$RESC_FILE" python3 /workspace/scripts/generate_swarm_resc.py
 
 echo "=== Running position-aware BLE fleet in Renode ==="
+echo "[INFO] Renode Mono GC parameters: $MONO_GC_PARAMS"
 set +e
 renode --disable-xwt --console "$RESC_FILE" >"$OUTPUT_DIR/renode.log" 2>&1
 RENODE_STATUS=$?
