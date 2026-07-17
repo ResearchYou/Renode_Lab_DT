@@ -72,7 +72,8 @@ FROM toolchain AS gateway-protocol-builder
 
 COPY reference/firmware/ghost_protocol.c /tmp/gateway-protocol/ghost_protocol.c
 COPY reference/firmware/include/ghost_protocol.h /tmp/gateway-protocol/include/ghost_protocol.h
-RUN arm-zephyr-eabi-gcc -std=c17 -Os -ffunction-sections -fdata-sections \
+RUN /opt/zephyr-sdk/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc \
+        -std=c17 -Os -ffunction-sections -fdata-sections \
         -fno-common -mcpu=cortex-m4 -mthumb -mabi=aapcs \
         -I /tmp/gateway-protocol/include \
         -c /tmp/gateway-protocol/ghost_protocol.c \
