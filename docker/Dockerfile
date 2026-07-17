@@ -37,14 +37,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Stable Renode release. The bundled nRF52840 model and BLEMedium are used
-# directly; no community board fork is needed for this scenario.
+# Stable Renode release. Cache the nRF52840 SVD in the image because challenge
+# Jobs intentionally have no Internet access. Without this rewrite Renode waits
+# through one download timeout per emulated board and eventually exhausts the
+# pod memory limit while its console queue keeps growing.
 RUN wget -q \
       "https://github.com/renode/renode/releases/download/v${RENODE_VERSION}/renode-${RENODE_VERSION}.linux-portable.tar.gz" \
       -O /tmp/renode.tar.gz \
     && mkdir -p /opt/renode \
     && tar xzf /tmp/renode.tar.gz -C /opt/renode --strip-components=1 \
     && rm /tmp/renode.tar.gz \
+    && mkdir -p /opt/renode/svd \
+    && wget -q \
+      "https://dl.antmicro.com/projects/renode/svd/NRF52840.svd.gz" \
+      -O /opt/renode/svd/NRF52840.svd.gz \
+    && sed -i \
+      's|@https://dl.antmicro.com/projects/renode/svd/NRF52840.svd.gz|@/opt/renode/svd/NRF52840.svd.gz|' \
+      /opt/renode/platforms/cpus/nrf52840.repl \
     && renode --version
 
 # Pin a shallow Zephyr manifest checkout, then fetch only the three modules used
