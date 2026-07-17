@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 OUTPUT = Path(os.environ.get("OUTPUT_DIR", "/workspace/output"))
-TAG_COUNT = int(os.environ.get("TAG_COUNT", "12"))
+TAG_COUNT = int(os.environ.get("TAG_COUNT", "6"))
 GATEWAY_COUNT = int(os.environ.get("GATEWAY_COUNT", "3"))
 SECTOR = int(os.environ.get("SECTOR_INDEX", "0"))
 TAG_BASE = SECTOR * TAG_COUNT

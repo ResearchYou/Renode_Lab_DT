@@ -81,7 +81,7 @@ def tag_positions(count: int) -> list[tuple[float, float, float]]:
 
 
 def main() -> None:
-    tag_count = env_int("TAG_COUNT", 12, 1, 64)
+    tag_count = env_int("TAG_COUNT", 6, 1, 64)
     gateway_count = env_int("GATEWAY_COUNT", 3, 1, 3)
     attacker_count = env_int("ATTACKER_COUNT", 2, 1, 8)
     sector = env_int("SECTOR_INDEX", 0, 0, 9999)

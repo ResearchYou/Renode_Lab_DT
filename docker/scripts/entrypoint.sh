@@ -7,7 +7,7 @@ echo "======================================================"
 echo "  GHOSTTAG APOCALYPSE // OFFLINE FIND-MESH HACKATHON"
 echo "  nRF52840 + Zephyr + Renode + Kubernetes"
 echo "======================================================"
-echo "sector=$SECTOR_INDEX tags=${TAG_COUNT:-12} gateways=${GATEWAY_COUNT:-3}"
+echo "sector=$SECTOR_INDEX tags=${TAG_COUNT:-6} gateways=${GATEWAY_COUNT:-3}"
 echo
 
 /workspace/scripts/build_firmware.sh

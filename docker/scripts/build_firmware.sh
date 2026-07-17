@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TAG_COUNT="${TAG_COUNT:-12}"
+TAG_COUNT="${TAG_COUNT:-6}"
 SECTOR_INDEX="${SECTOR_INDEX:-0}"
 BUILD_DIR="${BUILD_DIR:-/workspace/build}"
 OUTPUT_DIR="${OUTPUT_DIR:-/workspace/output}"
