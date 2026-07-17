@@ -105,6 +105,11 @@ WORKDIR /workspace
 COPY --chmod=0755 docker/scripts/ /workspace/scripts/
 COPY firmware/ /workspace/firmware_seed/
 COPY ide/problem/ /workspace/problem_seed/
+COPY --chmod=0444 ide/renode/README.md /workspace/renode/README.md
+COPY --chmod=0555 docker/scripts/generate_swarm_resc.py /workspace/renode/generate_swarm_resc.py
+COPY --chmod=0555 docker/scripts/run_test.sh /workspace/renode/run_test.sh
+RUN cp /opt/renode/platforms/cpus/nrf52840.repl /workspace/renode/nrf52840.repl \
+    && chmod 0444 /workspace/renode/nrf52840.repl
 COPY support/ /workspace/support/
 COPY --from=gateway-protocol-builder /tmp/gateway-protocol/ghost_protocol.o \
     /workspace/support/gateway/ghost_protocol.o

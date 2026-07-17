@@ -70,9 +70,13 @@ Studentul primeste in browser:
 
 - `firmware/` - sursa editabila;
 - `problem/` - enuntul challenge-ului;
-- `output/` - loguri, rezultate si raportul HTML;
+- `renode/` - generatorul scenariului, launcherul si descrierea platformei;
 - butonul Run - porneste pipeline-ul de validare;
-- panoul Results - afiseaza `output/report.html`.
+- panoul Results - afiseaza logurile, rezultatele si `output/report.html`.
+
+Explorer-ul arata exact cele trei directoare `firmware/`, `problem/` si
+`renode/`. Copiile din `renode/` sunt pentru inspectie; modificarile lor nu
+schimba evaluarea, care ruleaza scripturile imutabile din imagine.
 
 Datele sunt pastrate pe PVC-ul utilizatorului. O schimbare de scenariu arhiveaza
 workspace-ul anterior. PVC-urile nu trebuie sterse in timpul challenge-ului sau

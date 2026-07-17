@@ -7,6 +7,8 @@ import math
 import os
 from pathlib import Path
 
+from ghosttag_secrets import seed_for_tag
+
 
 CONFIG_BASE = 0x000FF000
 CONFIG_MAGIC = 0x47484F53
@@ -21,15 +23,6 @@ def env_int(name: str, default: int, minimum: int, maximum: int) -> int:
     if not minimum <= value <= maximum:
         raise SystemExit(f"{name} must be in [{minimum}, {maximum}], got {value}")
     return value
-
-
-def seed_for_tag(tag_id: int) -> int:
-    mask = (1 << 64) - 1
-    value = tag_id ^ 0x47484F5354544147
-    value = (value + 0x9E3779B97F4A7C15) & mask
-    value = ((value ^ (value >> 30)) * 0xBF58476D1CE4E5B9) & mask
-    value = ((value ^ (value >> 27)) * 0x94D049BB133111EB) & mask
-    return (value ^ (value >> 31)) & mask
 
 
 def machine(

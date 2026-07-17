@@ -17,7 +17,7 @@ participant nRF52840 tags -- BLE advertisements --> observer nRF52840 gateways
             +-- no stable ID on air                    +-- multi-gateway coverage
 ```
 
-The normal IDE run uses 12 tags, three gateways, and two rogue clones. The
+The normal IDE run uses 6 tags, three gateways, and two rogue clones. The
 cluster spectacle runs 12 indexed sectors containing 252 emulated nRF52840
 boards in total.
 
