@@ -118,8 +118,11 @@ kubectl get cm active-scenario -n challenge-platform -o yaml
 ```
 
 Log in with one disposable participant. Confirm that a fresh scenario archive
-is created, `firmware/ghost_protocol.c` and the problem statement are seeded,
-Run produces a queued Job, and `output/report.html` loads in the panel.
+is created, `firmware/ghost_protocol.c`, the problem statement, and the public
+`renode/` assets are seeded, Run produces a queued Job, and
+`output/report.html` loads in the panel. The Explorer roots must be exactly
+`firmware/`, `problem/`, and `renode/`; the participant surface must not contain
+the reference source or the private seed-provisioning helper.
 
 The starter must fail cleanly. A disposable reference mount must pass. This
 proves both negative and positive challenge paths.

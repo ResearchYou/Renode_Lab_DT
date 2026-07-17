@@ -20,11 +20,11 @@ certificarea radio sau evaluarea completa de confidentialitate.
 
 ## status curent
 
-status verificat la 2026-07-17:
+status verificat la 2026-07-18:
 
 | componenta | status | observatii |
 |---|---|---|
-| codul challenge-ului | gata | runtime-ul live este construit din commit-ul `e82509d` pe branch-ul `nrf52840-swarm/ghosttag-apocalypse` |
+| codul challenge-ului | gata | runtime-ul live este construit din commit-ul `4889c2e` pe branch-ul `nrf52840-swarm/ghosttag-apocalypse` |
 | starter pentru studenti | gata | contine exact 3 TODO-uri in `firmware/ghost_protocol.c` |
 | implementare de referinta | gata | se afla in `reference/firmware/`; nu trebuie oferita studentilor |
 | teste native | gata | 64 vectori SipHash, vector complet de payload, tamper pe fiecare byte, header/EID/MAC, seed, sector si leakage |
@@ -36,12 +36,13 @@ status verificat la 2026-07-17:
 | validare locala de referinta | trecuta | a trecut si cu reteaua dezactivata, 4 CPU si 4 GiB: 6/6 tag-uri, 6/6 rotite, raport HTML generat |
 | validare live de referinta | trecuta | rulare pornita prin API-ul IDE, `GHOST_VALIDATION passed=1`, `done: 0`, fara OOM |
 | validare live negativa | trecuta | starter-ul a produs 69 esecuri de contract, a sarit peste Renode, a generat raport si a terminat cu `done: 1` |
-| imagine studenti | publicata | sursa de referinta este absenta; gateway-ul foloseste numai un obiect ARM precompilat |
+| imagine studenti | publicata | sursa de referinta si helperul privat de provisioning sunt absente; gateway-ul foloseste numai un obiect ARM precompilat |
 | imagine showcase | publicata | seed separat cu referinta, acelasi runtime complet offline |
 | cluster Kubernetes | sanatos | toate cele 3 noduri sunt `Ready`, fara poduri defecte, pagina `/login` raspunde 200 |
 | scenariu activ pentru studenti | da | `nrf52840-swarm-ghosttag-apocalypse` este presetul live |
-| imagine GhostTag in registry | confirmata | digest participant `2c27080fe40f`, digest showcase `2079e1f5fb0a`, ambele cu label `e82509d` |
-| showcase GhostTag | trecut | 12/12 sectoare, 192/192 tag-uri vazute si rotite, zero esecuri, zero restarturi si zero retry |
+| imagine GhostTag in registry | confirmata | digest participant `cd4ed4bafd24`, digest showcase `d6d69c681e81`, ambele cu label `4889c2e` |
+| suprafata participant live | verificata | workspace-ul `initial` arata exact `firmware/`, `problem/` si `renode/`; hashurile coincid cu imaginea; nu expune referinta sau derivarea seed-urilor |
+| showcase GhostTag | trecut | acceptanta 12/12 a trecut pe digestul anterior; runtime-ul curent a trecut smoke-ul complet local cu 6/6 tag-uri si referinta |
 | utilizatori test live | eliminati | credentialele contin numai `initial`; namespace-urile `user1..user10` au fost sterse si nu au fost recreate |
 
 ## ce este deja implementat

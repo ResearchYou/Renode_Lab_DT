@@ -59,6 +59,7 @@ This branch is directly compatible with the live `eg106-platform` contract:
 - scenario image tag: `nrf52840-swarm-ghosttag-apocalypse`;
 - firmware seed: `/workspace/firmware_seed`;
 - problem seed: `/workspace/problem_seed`;
+- public Renode seed: `/workspace/renode`;
 - runtime entrypoint: `/workspace/scripts/entrypoint.sh`;
 - report: `/workspace/output/report.html`.
 
